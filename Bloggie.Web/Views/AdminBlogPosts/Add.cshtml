@@ -1,0 +1,156 @@
+﻿@model Bloggie.Web.Models.ViewModels.AddBlogPostRequest
+@{
+}
+
+<div class="bg-secondary bg-opacity-10 py-2">
+    <div class="container">
+        <h1>Add New BlogPost - Admin Functionality</h1>
+    </div>
+</div>
+
+<div class="container py-5">
+    <form method="post" onsubmit="return validateForm();">
+
+        <div class="mb-3">
+            <label class="form-label">Heading</label>
+            <input type="text" class="form-control" id="heading" asp-for="Heading" />
+            <span class="text-danger" asp-validation-for="Heading"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Page Title</label>
+            <input type="text" class="form-control" id="pageTitle" asp-for="PageTitle" />
+            <span class="text-danger" asp-validation-for="PageTitle"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Content</label>
+            <textarea class="form-control" id="content" asp-for="Content"></textarea>
+            <span class="text-danger" asp-validation-for="Content"></span>
+
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Short Description</label>
+            <input type="text" class="form-control" id="shortDescription" asp-for="ShortDescription" />
+            <span class="text-danger" asp-validation-for="ShortDescription"></span>
+
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Featured Image Upload</label>
+            <input type="file" id="featuredImageUpload" class="form-control" />
+            <span class="text-danger" asp-validation-for="FeaturedImageUrl"></span>
+
+     
+
+            <img src="" id="featuredImageDisplay" style="display:none;width: 300px;" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Featured Image URL</label>
+            <input type="text" class="form-control" id="featuredImageUrl" asp-for="FeaturedImageUrl" />
+            <span class="text-danger" asp-validation-for="FeaturedImageUrl"></span>
+
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">URL Handle</label>
+            <input type="text" class="form-control" id="urlHandle" asp-for="UrlHandle" />
+            <span class="text-danger" asp-validation-for="UrlHandle"></span>
+
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Published Date</label>
+            <input type="date" class="form-control" id="publishedDate" asp-for="PublishedDate" />
+            <span class="text-danger" asp-validation-for="PublishedDate"></span>
+
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Author</label>
+            <input type="text" class="form-control" id="author" asp-for="Author" />
+            <span class="text-danger" asp-validation-for="Author"></span>
+
+        </div>
+
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="visible" asp-for="Visible">
+            <label class="form-check-label">
+                Is Visible?
+            </label>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Tags</label>
+            <select class="form-select"
+                    asp-items="@Model.Tags"
+                    asp-for="SelectedTags">
+            </select>
+            <span class="text-danger" asp-validation-for="SelectedTags"></span>
+
+        </div>
+
+
+        <div class="mb-3">
+            <button type="submit" class="btn btn-dark">
+                Save
+            </button>
+        </div>
+
+
+    </form>
+</div>
+
+
+@section Scripts {
+    <script>
+        var editor = new FroalaEditor('#content', {
+            imageUploadURL: '/api/images'
+        });
+
+
+        const featuredUploadElement = document.getElementById('featuredImageUpload');
+        const featuredImageUrlElement = document.getElementById('featuredImageUrl');
+        const featuredImageDisplayElement = document.getElementById('featuredImageDisplay');
+
+
+        async function uploadFeaturedImage(e) {
+            console.log(e.target.files[0]);
+
+            let data = new FormData();
+            data.append('file', e.target.files[0]);
+
+            await fetch('/api/images', {
+                method: 'POST',
+                headers: {
+                    'Aceept': '*/*',
+                },
+                body: data
+            }).then(response => response.json())
+                .then(result => {
+                    featuredImageUrlElement.value = result.link;
+                    featuredImageDisplayElement.src = result.link;
+                    featuredImageDisplayElement.style.display = 'block';
+                });
+        }
+
+
+        featuredUploadElement.addEventListener('change', uploadFeaturedImage);
+
+        function validateForm() {
+            // Check if required fields are filled
+            var heading = document.getElementById('heading').value;
+            var pageTitle = document.getElementById('pageTitle').value;
+            // Add similar checks for other fields
+
+            if (!heading || !pageTitle /* Add similar conditions for other fields */) {
+                alert('Please fill in all required fields.');
+                return false; // Prevent form submission
+            }
+
+            return true; // Allow form submission
+        }
+    </script>
+}
