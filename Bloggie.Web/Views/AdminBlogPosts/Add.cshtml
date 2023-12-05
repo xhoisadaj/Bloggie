@@ -25,6 +25,7 @@
 
         <div class="mb-3">
             <label class="form-label">Content</label>
+
             <textarea class="form-control" id="content" asp-for="Content"></textarea>
             <span class="text-danger" asp-validation-for="Content"></span>
 
@@ -105,9 +106,22 @@
 
 
 @section Scripts {
+
     <script>
         var editor = new FroalaEditor('#content', {
-            imageUploadURL: '/api/images'
+            imageUploadURL: '/api/images',
+            
+
+            // Set the file upload URL.
+            fileUploadURL: '/api/images',
+
+
+       
+             
+             
+    
+          
+
         });
 
 
@@ -126,6 +140,7 @@
                 method: 'POST',
                 headers: {
                     'Aceept': '*/*',
+                    
                 },
                 body: data
             }).then(response => response.json())

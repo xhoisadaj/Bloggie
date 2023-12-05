@@ -50,10 +50,15 @@
                 </div>
 
                 <img src="@Model.FeaturedImageUrl" class="d-block img-fluid mb-3" />
-
                 <div class="mb-3 blog-details-content">
                     @Html.Raw(Model.Content)
+
+                    @if (Model.Content.Contains("<a class=\"fr-file\""))
+                    {
+                        <div id="documentContainer"></div>
+                    }
                 </div>
+
 
 
                 <div class="card">
@@ -132,6 +137,92 @@
 
 @section Scripts {
     <script>
+    
+
+
+        const documentContainer = document.getElementById('documentContainer');
+
+        function extractDocumentLinks(content) {
+            const docLinks = content.match(/<a class="fr-file".*?<\/a>/g) || [];
+            return docLinks;
+        }
+
+        function createDownloadButton(anchorTag) {
+            const link = document.createElement('a');
+            link.href = anchorTag.href; // Assuming href attribute contains the download URL
+            link.className = 'btn btn-primary mt-3 download-button';
+            link.innerHTML = 'Download File';
+
+            link.addEventListener('click', () => {
+                downloadFile(anchorTag.href);
+            });
+
+            return link;
+        }
+
+        const documentLinks = extractDocumentLinks('@Html.Raw(Model.Content)');
+
+        if (documentContainer && documentLinks.length > 0) {
+            documentLinks.forEach(docLink => {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = docLink;
+
+                const anchorTag = tempDiv.querySelector('.fr-file');
+
+                if (anchorTag) {
+                    const downloadButton = createDownloadButton(anchorTag);
+                    documentContainer.appendChild(downloadButton);
+                }
+            });
+        }
+
+        function downloadFile(url) {
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok: ${response.status}`);
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+
+                    // Extracting the file name from the URL or using a default name
+                    const fileName = url.substring(url.lastIndexOf('/') + 1) || 'downloadedFile';
+                    a.download = fileName;
+
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                })
+                .catch(error => {
+                    console.error('Error downloading file:', error);
+                });
+        }
+
+        function createDownloadButton(anchorTag) {
+            const link = document.createElement('a');
+            link.href = anchorTag.href; // Assuming href attribute contains the download URL
+            link.className = 'btn btn-primary mt-3 download-button';
+            link.innerHTML = 'Download File';
+
+            // Add the download attribute to trigger the download behavior
+            link.setAttribute('download', '');
+
+            link.addEventListener('click', (event) => {
+                event.preventDefault(); // Prevent the default behavior (navigation)
+
+                // Call your download function here
+                downloadFile(anchorTag.href);
+            });
+
+            return link;
+        }
+
+    </script>
+    <script>
         const btnLikeElement = document.getElementById('btnLike');
         const totalLikeElement = document.getElementById('totalLikes');
 
@@ -168,6 +259,5 @@
 
 
         btnLikeElement.addEventListener('click', addLikeForBlog);
-
     </script>
 }
