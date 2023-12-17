@@ -1,0 +1,32 @@
+﻿
+@{
+    ViewData["Title"] = "Confirm email";
+}
+<div class="container">
+    <div class="row text-center">
+        <div class="col-md-4">
+        </div>
+        <div class="col-md-4">
+            @if (Model.EmailVerified == true)
+            {
+                <div class="alert alert-success" role="alert">
+                    <p>Your email has been verified successfully.</p>
+                </div>
+            }
+            else
+            {
+                if (Model.EmailSent)
+                {
+                    <p>Email sent on your registered email id.</p>
+                }
+
+                else
+                {
+                    <p>We have sent an email on your email id. Click on the link to login.</p>
+                }
+
+              
+            }
+        </div>
+    </div>
+</div>

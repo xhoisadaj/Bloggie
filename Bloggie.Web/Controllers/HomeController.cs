@@ -1,8 +1,12 @@
-﻿using Bloggie.Web.Models;
+﻿using Bloggie.Models.ViewModels;
+using Bloggie.Repositories;
+using Bloggie.Web.Models;
 using Bloggie.Web.Models.ViewModels;
 using Bloggie.Web.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Net.Mail;
+using System.Net;
 
 namespace Bloggie.Web.Controllers
 {
@@ -11,19 +15,32 @@ namespace Bloggie.Web.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IBlogPostRepository blogPostRepository;
         private readonly ITagRepository tagRepository;
+        private readonly IEmailService emailService;
 
         public HomeController(ILogger<HomeController> logger,
             IBlogPostRepository blogPostRepository,
-            ITagRepository tagRepository
+            ITagRepository tagRepository,
+            IEmailService emailService
             )
         {
             _logger = logger;
             this.blogPostRepository = blogPostRepository;
             this.tagRepository = tagRepository;
+            this.emailService = emailService;
         }
 
         public async Task<IActionResult> Index(int page = 1, int pageSize = 5)
         {
+            //UserEmailOptions options = new UserEmailOptions
+            //{
+            //    ToEmails=new List<string>() { "xhoisadaj@gmail.com"},
+            //    PlaceHolders=  new List<KeyValuePair<string, string>>() { 
+            //    new KeyValuePair<string, string>("{{UserName}}","Xhoi")}
+            //};
+
+         
+            //await emailService.SendTestEmail(options);
+
             // getting all blogs
             var blogPosts = await blogPostRepository.GetAllAsync();
             blogPosts = blogPosts.OrderByDescending(bp => bp.PublishedDate).ToList();

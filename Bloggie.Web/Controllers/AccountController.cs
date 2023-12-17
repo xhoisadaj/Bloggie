@@ -1,4 +1,8 @@
-﻿using Bloggie.Web.Models.ViewModels;
+﻿using Bloggie.Models.ViewModels;
+using Bloggie.Repositories;
+using Bloggie.Web.Models.ViewModels;
+using Bloggie.Web.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,12 +12,21 @@ namespace Bloggie.Web.Controllers
     {
         private readonly UserManager<IdentityUser> userManager;
         private readonly SignInManager<IdentityUser> signInManager;
+        private readonly IEmailService emailService;
+        private readonly IUserRepository userRepository;
+        private readonly IConfiguration configuration;
 
         public AccountController(UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager)
+            SignInManager<IdentityUser> signInManager,
+            IEmailService emailService,
+            IUserRepository userRepository,
+            IConfiguration configuration)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.emailService = emailService;
+            this.userRepository = userRepository;
+            this.configuration = configuration;
         }
 
 
@@ -27,31 +40,29 @@ namespace Bloggie.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel registerViewModel)
         {
+
             if (ModelState.IsValid)
             {
-                var identityUser = new IdentityUser
+                // write your code
+                var result = await userRepository.CreateUserAsync(registerViewModel);
+                if (!result.Succeeded)
                 {
-                    UserName = registerViewModel.Username,
-                    Email = registerViewModel.Email
-                };
-
-                var identityResult = await userManager.CreateAsync(identityUser, registerViewModel.Password);
-
-                if (identityResult.Succeeded)
-                {
-                    // assign this user the "User" role
-                    var roleIdentityResult = await userManager.AddToRoleAsync(identityUser, "User");
-
-                    if (roleIdentityResult.Succeeded)
+                    foreach (var errorMessage in result.Errors)
                     {
-                        // Show success notification
-                        return RedirectToAction("Register");
+                        ModelState.AddModelError("", errorMessage.Description);
                     }
-                }
-            }
 
-            // Show error notification
-            return View();
+                    return View(registerViewModel);
+                }
+
+               // ModelState.Clear();
+              //  return RedirectToAction("ConfirmEmail");
+                return View(registerViewModel);
+            }
+            return RedirectToAction("ConfirmEmail");
+
+            //return View(registerViewModel);
+         
         }
 
 
@@ -91,6 +102,13 @@ namespace Bloggie.Web.Controllers
             // Show errors
             return View();
         }
+
+
+
+
+     
+
+
 
         [HttpGet]
         public async Task<IActionResult> Logout()
@@ -181,6 +199,34 @@ namespace Bloggie.Web.Controllers
         public IActionResult AccessDenied()
         {
             return View();
+        }
+        [HttpGet("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail(string uid, string token)
+        {
+            // Now you can use uid and token in your application logic
+            // For example, you can verify the email confirmation or process the user account
+            if (!string.IsNullOrEmpty(uid) && !string.IsNullOrEmpty(token))
+            {
+                token = token.Replace(' ', '+');
+
+                // Retrieve the IdentityUser instance based on uid
+                var user = await userManager.FindByIdAsync(uid);
+
+                if (user != null)
+                {
+                    var result = await userManager.ConfirmEmailAsync(user, token);
+
+                    // Process the result if needed
+                    if (result.Succeeded)
+                    {
+                        // Do something
+                        ViewBag.IsSuccess = true;
+                    }
+                }
+            }
+
+            return View();
+            //return Content($"Email Confirmation: uid={uid}, token={token}");
         }
     }
 }

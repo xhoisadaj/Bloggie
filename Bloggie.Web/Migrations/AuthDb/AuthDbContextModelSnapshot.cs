@@ -64,6 +64,7 @@ namespace Bloggie.Web.Migrations.AuthDb
                             Name = "User",
                             NormalizedName = "User"
                         });
+
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
