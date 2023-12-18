@@ -11,8 +11,9 @@ namespace Bloggie.Web.Repositories
         Task GenerateEmailConfrimationTokenAsync(IdentityUser identityUser);
         Task<IdentityUser> GetUserByEmailAsync(string email);
 
-        
-
+        Task GenerateForgotPasswordTokenAsync(IdentityUser identityUser);
         Task<IdentityResult> ConfirmEmailAsync(string uid, string token);
+        Task<IdentityResult> ResetPasswordAsync(ResetPasswordModel model);
+
     }
 }

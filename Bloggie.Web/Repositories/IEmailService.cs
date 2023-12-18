@@ -6,7 +6,7 @@ namespace Bloggie.Web.Repositories
     {
         Task SendTestEmail(UserEmailOptions userEmailOptions);
         Task SendEmailForEmailConfirmation(UserEmailOptions userEmailOptions);
-        
+        Task SendEmailForForgotPassword(UserEmailOptions userEmailOptions);
 
     }
 }

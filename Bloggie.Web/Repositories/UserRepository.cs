@@ -67,6 +67,18 @@ namespace Bloggie.Web.Repositories
             }
 
         }
+
+        public async Task GenerateForgotPasswordTokenAsync(IdentityUser identityUser)
+        {
+            var token = await userManager.GeneratePasswordResetTokenAsync(identityUser);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                await SendForgotPasswordEmail(identityUser, token);
+            }
+
+        }
+
         public async Task<IdentityUser> GetUserByEmailAsync(string email)
         {
            // return await userManager.FindByEmailAsync(Email);
@@ -91,7 +103,25 @@ namespace Bloggie.Web.Repositories
 
             await emailService.SendEmailForEmailConfirmation(options);
         }
-   
+
+        private async Task SendForgotPasswordEmail(IdentityUser user, string token)
+        {
+
+            string appDomain = configuration.GetSection("Application:AppDomain").Value;
+            string confirmationLink = configuration.GetSection("Application:ForgotPassword").Value;
+            UserEmailOptions options = new UserEmailOptions
+            {
+                ToEmails = new List<string>() { user.Email },
+                PlaceHolders = new List<KeyValuePair<string, string>>()
+                {
+                new KeyValuePair<string, string>("{{UserName}}",user.UserName),
+                new KeyValuePair<string, string>("{{Link}}", string.Format(appDomain + confirmationLink, user.Id,token))
+                }
+            };
+
+
+            await emailService.SendEmailForForgotPassword(options);
+        }
 
         public async Task<IdentityResult> ConfirmEmailAsync(string uid, string token)
         {
@@ -100,6 +130,16 @@ namespace Bloggie.Web.Repositories
 
             // Confirm the user's email using the user manager and the provided token.
             return await userManager.ConfirmEmailAsync(user, token);
+        }
+
+        public async Task<IdentityResult> ResetPasswordAsync(ResetPasswordModel model)
+        {
+            // Find the user by their user ID (uid) using the user manager.
+            var user = await userManager.FindByIdAsync(model.UserId);
+
+            return await userManager.ResetPasswordAsync(user,model.Token,model.NewPassword);
+
+           
         }
 
         public async Task<IEnumerable<IdentityUser>> GetAll()
