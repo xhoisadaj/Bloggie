@@ -1,11 +1,12 @@
-﻿using Bloggie.Models.ViewModels;
-using Bloggie.Repositories;
+﻿using Bloggie.Web.Models.ViewModels;
+using Bloggie.Web.Repositories;
 using Bloggie.Web.Data;
-using Bloggie.Web.Models.ViewModels;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System.Web.Helpers;
 
 namespace Bloggie.Web.Repositories
 {
@@ -41,12 +42,7 @@ namespace Bloggie.Web.Repositories
 
                 if (roleIdentityResult.Succeeded)
                 {
-                    var token = await userManager.GenerateEmailConfirmationTokenAsync(identityUser);
-
-                    if (!string.IsNullOrEmpty(token))
-                    {
-                        await SendEmailConfirmationEmail(identityUser, token);
-                    }
+                    await GenerateEmailConfrimationTokenAsync(identityUser);
 
                     // Show success notification
                     // return RedirectToAction("ConfirmEmail", new { email = userModel.Email });
@@ -59,6 +55,22 @@ namespace Bloggie.Web.Repositories
 
             // Return a default value or throw an exception, depending on your requirements
             return identityResult;
+        }
+
+        public async Task GenerateEmailConfrimationTokenAsync(IdentityUser identityUser)
+        {
+            var token = await userManager.GenerateEmailConfirmationTokenAsync(identityUser);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                await SendEmailConfirmationEmail(identityUser, token);
+            }
+
+        }
+        public async Task<IdentityUser> GetUserByEmailAsync(string email)
+        {
+           // return await userManager.FindByEmailAsync(Email);
+            return await userManager.FindByEmailAsync(email);
         }
 
         private async Task SendEmailConfirmationEmail(IdentityUser user, string token)
@@ -105,11 +117,6 @@ namespace Bloggie.Web.Repositories
             return users;
         }
 
-    
-
-        public Task GenerateEmailConfirmationTokenAsync(RegisterViewModel registerViewModel)
-        {
-            throw new NotImplementedException();
-        }
+   
     }
 }

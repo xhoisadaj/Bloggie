@@ -1,14 +1,14 @@
 ﻿
-using Bloggie.Models.ViewModels;
+using Bloggie.Web.Models.ViewModels;
 using Microsoft.Extensions.Options;
 using System.Net.Mail;
 using System.Net;
 using System.Text;
-using Bloggie.Web.Models.ViewModels;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Bloggie.Repositories
+namespace Bloggie.Web.Repositories
 {
 
     public class EmailService : IEmailService

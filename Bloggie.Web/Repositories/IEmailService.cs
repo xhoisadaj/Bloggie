@@ -1,6 +1,6 @@
-﻿using Bloggie.Models.ViewModels;
+﻿using Bloggie.Web.Models.ViewModels;
 
-namespace Bloggie.Repositories
+namespace Bloggie.Web.Repositories
 {
     public interface IEmailService
     {

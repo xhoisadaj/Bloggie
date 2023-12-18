@@ -8,9 +8,10 @@ namespace Bloggie.Web.Repositories
         Task<IEnumerable<IdentityUser>> GetAll();
         Task<IdentityResult> CreateUserAsync(RegisterViewModel registerViewModel);
 
+        Task GenerateEmailConfrimationTokenAsync(IdentityUser identityUser);
+        Task<IdentityUser> GetUserByEmailAsync(string email);
 
-
-        Task GenerateEmailConfirmationTokenAsync(RegisterViewModel registerViewModel);
+        
 
         Task<IdentityResult> ConfirmEmailAsync(string uid, string token);
     }

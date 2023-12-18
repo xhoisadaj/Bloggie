@@ -1,5 +1,4 @@
-﻿using Bloggie.Models.ViewModels;
-using Bloggie.Repositories;
+﻿
 using Bloggie.Web.Models.ViewModels;
 using Bloggie.Web.Repositories;
 using Microsoft.AspNetCore.Authorization;
@@ -55,13 +54,14 @@ namespace Bloggie.Web.Controllers
                     return View(registerViewModel);
                 }
 
-               // ModelState.Clear();
-              //  return RedirectToAction("ConfirmEmail");
-                return View(registerViewModel);
-            }
-            return RedirectToAction("ConfirmEmail");
+               ModelState.Clear();
+               return RedirectToAction("ConfirmEmail", new {email= registerViewModel.Email});
 
-            //return View(registerViewModel);
+               
+            }
+            //return RedirectToAction("ConfirmEmail");
+
+            return View(registerViewModel);
          
         }
 
@@ -201,8 +201,14 @@ namespace Bloggie.Web.Controllers
             return View();
         }
         [HttpGet("confirm-email")]
-        public async Task<IActionResult> ConfirmEmail(string uid, string token)
+        public async Task<IActionResult> ConfirmEmail(string uid, string token, string email)
         {
+            EmailConfirmModel model = new EmailConfirmModel
+            {
+                Email = email
+
+
+            };
             // Now you can use uid and token in your application logic
             // For example, you can verify the email confirmation or process the user account
             if (!string.IsNullOrEmpty(uid) && !string.IsNullOrEmpty(token))
@@ -220,12 +226,40 @@ namespace Bloggie.Web.Controllers
                     if (result.Succeeded)
                     {
                         // Do something
-                        ViewBag.IsSuccess = true;
+                      //  ViewBag.IsSuccess = true;
+                        model.EmailVerified = true;
                     }
                 }
             }
+       
 
-            return View();
+                return View(model);
+            //return Content($"Email Confirmation: uid={uid}, token={token}");
+        }
+
+   
+
+        [HttpPost("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail(EmailConfirmModel model)
+        {
+
+            var user = await userRepository.GetUserByEmailAsync(model.Email);
+            if (user != null)
+            {
+                if (user.EmailConfirmed)
+                {
+                    model.EmailVerified = true;
+                    return View(model);
+                }
+                await userRepository.GenerateEmailConfrimationTokenAsync(user);
+                model.EmailSent = true;
+                //ModelState.AddModelError();
+            }
+            else
+            {
+                ModelState.AddModelError("", "Something went wrong.");
+            }
+            return View(model);
             //return Content($"Email Confirmation: uid={uid}, token={token}");
         }
     }

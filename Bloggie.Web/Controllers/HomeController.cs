@@ -1,5 +1,4 @@
-﻿using Bloggie.Models.ViewModels;
-using Bloggie.Repositories;
+﻿
 using Bloggie.Web.Models;
 using Bloggie.Web.Models.ViewModels;
 using Bloggie.Web.Repositories;

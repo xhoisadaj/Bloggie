@@ -1,4 +1,4 @@
-﻿namespace Bloggie.Models.ViewModels
+﻿namespace Bloggie.Web.Models.ViewModels
 {
     public class UserEmailOptions
     {

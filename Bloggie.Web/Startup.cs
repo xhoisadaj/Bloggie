@@ -1,6 +1,6 @@
-using Bloggie.Models.ViewModels;
-using Bloggie.Repositories;
+
 using Bloggie.Web.Data;
+using Bloggie.Web.Models.ViewModels;
 using Bloggie.Web.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
