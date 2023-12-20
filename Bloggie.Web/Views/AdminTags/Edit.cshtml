@@ -12,21 +12,28 @@
 <div class="container py-5">
     @if (Model != null)
     {
-        <form method="post">
+        <form method="post" class="container needs-validation" novalidate>
 
-            <div class="mb-3">
+            <div class="mb-3" validate-me>
                 <label class="form-label">Id</label>
                 <input type="text" id="id" class="form-control" asp-for="Id" readonly />
+
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Name</label>
                 <input type="text" id="name" class="form-control" asp-for="Name" />
+                <div class="invalid-feedback" asp-validation-for="Name">
+                    Name is required.
+                </div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Display Name</label>
                 <input type="text" id="displayName" class="form-control" asp-for="DisplayName" />
+                <div class="invalid-feedback" asp-validation-for="DisplayName">
+                    Display Name is required.
+                </div>
             </div>
 
             <div class="mb-3">
@@ -52,3 +59,52 @@
         <p>Tag not found!</p>
     }
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var forms = document.querySelectorAll('.needs-validation');
+
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    // Custom validation to check if Name or DisplayName is null or empty
+                    var nameField = document.getElementById('name');
+                    var displayNameField = document.getElementById('displayName');
+
+                    if (!nameField.value.trim() || !displayNameField.value.trim()) {
+                        // Prevent form submission if Name or DisplayName is empty
+                        event.preventDefault();
+                        event.stopPropagation();
+
+                        // Mark the fields as invalid
+                        validateField(nameField);
+                        validateField(displayNameField);
+                    }
+
+                    // Use default form validation check
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        });
+
+        // Helper function to add/remove is-invalid and is-valid classes based on field value
+        function validateField(field) {
+            if (!field.value.trim()) {
+                // Add the is-invalid class to show the validation error message
+                field.classList.add('is-invalid');
+                // Remove the is-valid class to hide the valid checker
+                field.classList.remove('is-valid');
+            } else {
+                // Add the is-valid class to show the valid checker
+                field.classList.add('is-valid');
+                // Remove the is-invalid class to hide the validation error message
+                field.classList.remove('is-invalid');
+            }
+        }
+    </script>
+}

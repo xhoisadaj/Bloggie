@@ -1,48 +1,66 @@
 ﻿@model Bloggie.Web.Models.ViewModels.AddBlogPostRequest
 @{
 }
-
+<style>
+    .second-toolbar{
+        display:none;
+    }
+</style>
 <div class="bg-secondary bg-opacity-10 py-2">
     <div class="container">
-        <h1>Add New BlogPost - Admin Functionality</h1>
+        <h1>Add New BlogPost </h1>
     </div>
 </div>
 
 <div class="container py-5">
-    <form method="post" onsubmit="return validateForm();">
+    <form method="post" class="container needs-validation" novalidate>
 
-        <div class="mb-3">
+        <div class="mb-3" validate-me>
             <label class="form-label">Heading</label>
             <input type="text" class="form-control" id="heading" asp-for="Heading" />
-            <span class="text-danger" asp-validation-for="Heading"></span>
+           
+            <div class="invalid-feedback" asp-validation-for="Heading">
+                Heading is required.
+            </div>
         </div>
 
         <div class="mb-3">
             <label class="form-label">Page Title</label>
             <input type="text" class="form-control" id="pageTitle" asp-for="PageTitle" />
-            <span class="text-danger" asp-validation-for="PageTitle"></span>
+          
+            <div class="invalid-feedback" asp-validation-for="PageTitle">
+                Page Title is required.
+            </div>
         </div>
 
         <div class="mb-3">
             <label class="form-label">Content</label>
 
             <textarea class="form-control" id="content" asp-for="Content"></textarea>
-            <span class="text-danger" asp-validation-for="Content"></span>
+          
+            <div class="invalid-feedback" asp-validation-for="Content">
+                Content is required.
+            </div>
 
         </div>
 
         <div class="mb-3">
             <label class="form-label">Short Description</label>
             <input type="text" class="form-control" id="shortDescription" asp-for="ShortDescription" />
-            <span class="text-danger" asp-validation-for="ShortDescription"></span>
+           
+            <div class="invalid-feedback" asp-validation-for="ShortDescription">
+                Short Description is required.
+            </div>
 
         </div>
 
         <div class="mb-3">
             <label class="form-label">Featured Image Upload</label>
             <input type="file" id="featuredImageUpload" class="form-control" />
-            <span class="text-danger" asp-validation-for="FeaturedImageUrl"></span>
-
+           
+            <div class="invalid-feedback" asp-validation-for="featuredImageUpload">
+                Featured Image Upload is required.
+            </div>
      
 
             <img src="" id="featuredImageDisplay" style="display:none;width: 300px;" />
@@ -51,30 +69,43 @@
         <div class="mb-3">
             <label class="form-label">Featured Image URL</label>
             <input type="text" class="form-control" id="featuredImageUrl" asp-for="FeaturedImageUrl" />
-            <span class="text-danger" asp-validation-for="FeaturedImageUrl"></span>
+        
+            <div class="invalid-feedback" asp-validation-for="FeaturedImageUrl">
+                Featured Image Url is required.
+            </div>
 
         </div>
 
         <div class="mb-3">
             <label class="form-label">URL Handle</label>
             <input type="text" class="form-control" id="urlHandle" asp-for="UrlHandle" />
-            <span class="text-danger" asp-validation-for="UrlHandle"></span>
-
+           
+            <div class="invalid-feedback" asp-validation-for="UrlHandle">
+                Url Handle is required.
+            </div>
         </div>
 
         <div class="mb-3">
             <label class="form-label">Published Date</label>
-            <input type="date" class="form-control" id="publishedDate" asp-for="PublishedDate" />
-            <span class="text-danger" asp-validation-for="PublishedDate"></span>
-
+            <!-- Set the value to the current day using Razor syntax -->
+            <input type="date" class="form-control" id="publishedDate" asp-for="PublishedDate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+         
+            <div class="invalid-feedback" asp-validation-for="PublishedDate">
+                Published Date is required.
+            </div>
         </div>
 
         <div class="mb-3">
             <label class="form-label">Author</label>
             <input type="text" class="form-control" id="author" asp-for="Author" />
-            <span class="text-danger" asp-validation-for="Author"></span>
+          
+            <div class="invalid-feedback" asp-validation-for="Author">
+                Author is required.
+            </div>
 
         </div>
+
+
 
         <div class="form-check mb-3">
             <input class="form-check-input" type="checkbox" id="visible" asp-for="Visible">
@@ -90,6 +121,9 @@
                     asp-for="SelectedTags">
             </select>
             <span class="text-danger" asp-validation-for="SelectedTags"></span>
+            <div class="invalid-feedback" asp-validation-for="SelectedTags">
+                Selected Tags is required.
+            </div>
 
         </div>
 
@@ -116,14 +150,9 @@
             fileUploadURL: '/api/images',
 
 
-       
-             
-             
-    
-          
-
         });
 
+        
 
         const featuredUploadElement = document.getElementById('featuredImageUpload');
         const featuredImageUrlElement = document.getElementById('featuredImageUrl');
@@ -140,14 +169,16 @@
                 method: 'POST',
                 headers: {
                     'Aceept': '*/*',
-                    
                 },
                 body: data
             }).then(response => response.json())
                 .then(result => {
-                    featuredImageUrlElement.value = result.link;
+                    if (!featuredImageUrlElement.value.trim()) {
+                        featuredImageUrlElement.value = result.link;
+                    }
                     featuredImageDisplayElement.src = result.link;
                     featuredImageDisplayElement.style.display = 'block';
+                    validateField(featuredImageUrlElement);
                 });
         }
 
@@ -156,16 +187,168 @@
 
         function validateForm() {
             // Check if required fields are filled
-            var heading = document.getElementById('heading').value;
-            var pageTitle = document.getElementById('pageTitle').value;
-            // Add similar checks for other fields
+            var heading = document.getElementById('heading');
+            var pageTitle = document.getElementById('pageTitle');
+            var content = document.getElementById('content');
+            var shortDescription = document.getElementById('shortDescription');
+            var featuredImageUpload = document.getElementById('featuredImageUpload');
+            var featuredImageUrl = document.getElementById('featuredImageUrl');
+            var urlHandle = document.getElementById('urlHandle');
+            var publishedDate = document.getElementById('publishedDate');
+            var author = document.getElementById('author');
+            var selectedTags = document.getElementById('SelectedTags');
 
-            if (!heading || !pageTitle /* Add similar conditions for other fields */) {
-                alert('Please fill in all required fields.');
+            // Add similar checks for other fields
+            validateField(heading);
+            validateField(pageTitle);
+            validateField(content);
+            validateField(shortDescription);
+            validateField(featuredImageUpload);
+            validateField(featuredImageUrl);
+            validateField(urlHandle);
+            validateField(publishedDate);
+            validateField(author);
+            validateField(selectedTags);
+
+            // Check if any required field is empty
+            if (
+                !isValidField(heading) ||
+                !isValidField(pageTitle) ||
+                !isValidField(content) ||
+                !isValidField(shortDescription) ||
+                !isValidField(featuredImageUpload) ||
+                !isValidField(featuredImageUrl) ||
+                !isValidField(urlHandle) ||
+                !isValidField(publishedDate) ||
+                !isValidField(author) ||
+                !isValidField(selectedTags)
+            ) {
                 return false; // Prevent form submission
             }
 
             return true; // Allow form submission
         }
+
+        // Helper function to add/remove is-invalid and is-valid classes based on field value
+        function validateField(field) {
+            if (!field.value.trim()) {
+                // Add the is-invalid class to show the validation error message
+                field.classList.add('is-invalid');
+                // Remove the is-valid class to hide the valid checker
+                field.classList.remove('is-valid');
+            } else {
+                // Add the is-valid class to show the valid checker
+                field.classList.add('is-valid');
+                // Remove the is-invalid class to hide the validation error message
+                field.classList.remove('is-invalid');
+            }
+        }
+
+        // Helper function to check if a field is valid
+        function isValidField(field) {
+            return field.classList.contains('is-valid');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var forms = document.querySelectorAll('.needs-validation');
+
+            forms.forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    // Prevent the form from submitting by default
+                    event.preventDefault();
+
+                    // Validate the form fields manually
+                    var isValid = validateForm();
+
+                    // If the form is valid, add the 'was-validated' class and submit
+                    if (isValid) {
+                        form.classList.add('was-validated');
+                        form.submit();
+                    } else {
+                        // If the form is not valid, do not add the 'was-validated' class
+                        form.classList.remove('was-validated');
+                    }
+                });
+            });
+        });
+
+
+        // Helper function to check if a field is valid
+        function isValidField(field) {
+            return field.classList.contains('is-valid');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var forms = document.querySelectorAll('.needs-validation');
+
+            forms.forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    // Prevent the form from submitting by default
+                    event.preventDefault();
+
+                    // Validate the form fields manually
+                    var isValid = validateForm();
+
+                    // Check Froala Editor content
+                    if (!isFroalaEditorEmpty()) {
+                        // Froala Editor is not empty
+                        validateField(document.getElementById('content'));
+                    }
+
+                    // If the form is valid, add the 'was-validated' class and submit
+                    if (isValid) {
+                        form.classList.add('was-validated');
+                        form.submit();
+                    } else {
+                        // If the form is not valid, do not add the 'was-validated' class
+                        form.classList.remove('was-validated');
+                    }
+                });
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const contentField = document.getElementById('content');
+
+            if (contentField) {
+                // Add the input event listener to trigger validation on user input
+                contentField.addEventListener('input', function () {
+                    // Remove the validation message when the user starts typing
+                    validateField(contentField);
+                });
+            }
+        });
+
+        function isFroalaEditorEmpty() {
+            // Check if Froala Editor content is empty
+            return $('#content').froalaEditor('core.isEmpty');
+        }
+  
+        document.addEventListener('DOMContentLoaded', function () {
+            var successToast = document.getElementById('success-toast');
+
+            if (successToast) {
+                var toast = new bootstrap.Toast(successToast);
+                toast.show();
+
+                setTimeout(function () {
+                    toast.hide();
+                }, 2000); // Set the time in milliseconds (2 seconds in this example)
+            }
+        });
+        ['heading', 'pageTitle', 'content', 'shortDescription', 'featuredImageUpload', 'featuredImageUrl', 'urlHandle', 'publishedDate', 'author', 'SelectedTags']
+            .forEach(fieldName => {
+                const fieldElement = document.getElementById(fieldName);
+
+                if (fieldElement) {
+                    // Add the input event listener to trigger validation on user input
+                    fieldElement.addEventListener('input', function () {
+                        validateField(fieldElement);
+                    });
+                }
+            });
+    
+        // Example starter JavaScript for disabling form submissions if there are invalid fields
+        
     </script>
 }

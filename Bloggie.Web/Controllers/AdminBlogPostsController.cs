@@ -37,6 +37,7 @@ namespace Bloggie.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Add(AddBlogPostRequest addBlogPostRequest)
         {
+
             // Map view model to domain model
             var blogPost = new BlogPost
             {
@@ -67,8 +68,20 @@ namespace Bloggie.Web.Controllers
             // Mapping tags back to domain model
             blogPost.Tags = selectedTags;
 
+            var result = await blogPostRepository.AddAsync(blogPost);
 
-            await blogPostRepository.AddAsync(blogPost);
+            // Check if the operation was successful
+            if (result != null)
+            {
+                // Set success message in TempData
+                TempData["SuccessMessage"] = "Blog post added successfully!";
+            }
+            else
+            {
+                // Handle the case where adding the blog post failed
+                TempData["ErrorMessage"] = "Error adding the blog post. Please try again.";
+            }
+
 
             return RedirectToAction("Add");
         }

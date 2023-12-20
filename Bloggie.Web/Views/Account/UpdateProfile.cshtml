@@ -8,39 +8,53 @@
                 Profile
             </h1>
 
-<form asp-controller="Account" asp-action="UpdateProfile" method="post">
+            <form asp-controller="Account" asp-action="UpdateProfile" method="post" class="container needs-validation" novalidate onsubmit="return validateForm()">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <div class="form-group">
-        <label asp-for="Username"></label>
-        <input asp-for="Username" class="form-control" />
-        <span asp-validation-for="Username" class="text-danger"></span>
-    </div>
+                <div class="form-group" validate-me>
+                    <label asp-for="Username"></label>
+                    <input asp-for="Username" class="form-control" required />
+                    <div class="invalid-feedback" asp-validation-for="Username">
+                        Username is required.
+                    </div>
+                </div>
 
-    <div class="form-group">
-        <label asp-for="Email"></label>
-        <input asp-for="Email" class="form-control" />
-        <span asp-validation-for="Email" class="text-danger"></span>
-    </div>
+                <div class="form-group">
+                    <label asp-for="Email"></label>
+                    <input asp-for="Email" class="form-control" required />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                    <div class="invalid-feedback" asp-validation-for="Email">
+                        Email is required.
+                    </div>
+                </div>
 
                 <div class="form-group">
                     <label asp-for="CurrentPassword"></label>
-                    <input asp-for="CurrentPassword" type="password" class="form-control" />
-                    <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+                    <input asp-for="CurrentPassword" type="password" class="form-control" required />
+                   
+                    <div class="invalid-feedback" asp-validation-for="CurrentPassword">
+                        Current Password is required.
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <label asp-for="NewPassword"></label>
-                    <input asp-for="NewPassword" type="password" class="form-control" />
-                    <span asp-validation-for="NewPassword" class="text-danger"></span>
+                    <input asp-for="NewPassword" type="password" class="form-control" required />
+                  
+                    <div class="invalid-feedback" asp-validation-for="NewPassword">
+                        New Password is required.
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <label asp-for="ConfirmNewPassword"></label>
-                    <input asp-for="ConfirmNewPassword" type="password" class="form-control" />
-                    <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
+                    <input asp-for="ConfirmNewPassword" type="password" class="form-control" required />
+                    
+                    <div class="invalid-feedback" asp-validation-for="ConfirmNewPassword">
+                        Confirm New Password is required.
+                    </div>
                 </div>
-
+                <br />
     <!-- Add more input fields for additional properties if needed -->
 
     <button type="submit" class="btn btn-primary">Update Profile</button>
@@ -48,3 +62,31 @@
         </div>
     </div>
 </div>
+
+<script>
+    function validateForm() {
+        var form = document.forms[0];
+        var isValid = form.checkValidity();
+
+        if (!isValid) {
+            // Iterate over form elements to show/hide validation messages
+            for (var i = 0; i < form.elements.length; i++) {
+                var element = form.elements[i];
+
+                // Skip non-input elements
+                if (element.tagName.toLowerCase() !== 'input') {
+                    continue;
+                }
+
+                // Find the corresponding invalid-feedback element
+                var feedbackElement = element.nextElementSibling;
+                if (feedbackElement && feedbackElement.classList.contains('invalid-feedback')) {
+                    // Show or hide the validation message based on the input validity
+                    feedbackElement.style.display = element.validity.valid ? 'none' : 'block';
+                }
+            }
+        }
+
+        return isValid;
+    }
+</script>

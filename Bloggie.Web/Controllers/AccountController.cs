@@ -83,6 +83,7 @@ namespace Bloggie.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
+                TempData["ErrorMessage"] = "Login failed. Please check your credentials.";
                 return View();
             }
 
@@ -96,9 +97,24 @@ namespace Bloggie.Web.Controllers
                     return Redirect(loginViewModel.ReturnUrl);
                 }
 
+                // Set success message in TempData
+                TempData["SuccessMessage"] = "Login successful!";
+
                 return RedirectToAction("Index", "Home");
             }
-
+            else if (signInResult.IsNotAllowed)
+            {
+                ModelState.AddModelError("", "Not allowed to login");
+            }
+            else if (signInResult.IsLockedOut)
+            {
+                ModelState.AddModelError("", "Account blocked. Try after some time.");
+            }
+            else
+            {
+                ModelState.AddModelError("", "Invalid credentials");
+            }
+            TempData["ErrorMessage"] = "Login failed. Please check your credentials.";
             // Show errors
             return View();
         }
@@ -114,6 +130,7 @@ namespace Bloggie.Web.Controllers
         public async Task<IActionResult> Logout()
         {
             await signInManager.SignOutAsync();
+            TempData["SuccessMessage"] = "Logout successful!";
             return RedirectToAction("Index", "Home");
         }
 
