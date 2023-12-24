@@ -4,6 +4,7 @@ using Bloggie.Web.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Linq;
 
 namespace Bloggie.Web.Controllers
 {
@@ -86,15 +87,28 @@ namespace Bloggie.Web.Controllers
             return RedirectToAction("Add");
         }
 
-
         [HttpGet]
-        public async Task<IActionResult> List()
+        public async Task<IActionResult> List(int? page)
         {
-            // Call the repository 
+            const int pageSize = 5; // Number of posts per page
+
             var blogPosts = await blogPostRepository.GetAllAsync();
 
-            return View(blogPosts);
+            // Sort blog posts by creation date in descending order
+            blogPosts = blogPosts.OrderByDescending(post => post.PublishedDate).ToList();
+
+            // Ensure page has a value, default to 1 if not
+            var pageIndex = page.HasValue ? page.Value : 1;
+
+            // Perform calculations using pageIndex
+            var paginatedBlogPosts = blogPosts.Skip((pageIndex - 1) * pageSize).Take(pageSize);
+
+            ViewBag.PageIndex = pageIndex;
+            ViewBag.TotalPages = (int)Math.Ceiling(blogPosts.Count() / (double)pageSize);
+
+            return View(paginatedBlogPosts.ToList());
         }
+
 
 
         [HttpGet]
@@ -135,6 +149,9 @@ namespace Bloggie.Web.Controllers
             return View(null);
         }
 
+
+
+
         [HttpPost]
         public async Task<IActionResult> Edit(EditBlogPostRequest editBlogPostRequest)
         {
@@ -171,8 +188,12 @@ namespace Bloggie.Web.Controllers
 
             blogPostDomainModel.Tags = selectedTags;
 
+
+
             // Submit information to repository to update
             var updatedBlog =  await blogPostRepository.UpdateAsync(blogPostDomainModel);
+
+
 
             if (updatedBlog != null)
             {
@@ -183,6 +204,29 @@ namespace Bloggie.Web.Controllers
             // Show error notification
             return RedirectToAction("Edit");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateVisibility(Guid id, bool isVisible)
+        {
+            var existingBlog = await blogPostRepository.GetAsync(id);
+
+            if (existingBlog == null)
+            {
+                // Handle the case where the blog post with the provided Id is not found
+                // You might want to add some error handling or redirect to an error page
+                return RedirectToAction("List");
+            }
+
+            // Update visibility status
+            existingBlog.Visible = isVisible;
+
+            // Save changes
+            await blogPostRepository.UpdateAsync(existingBlog);
+
+            // Redirect back to the list or wherever appropriate
+            return RedirectToAction("List");
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> Delete(EditBlogPostRequest editBlogPostRequest)

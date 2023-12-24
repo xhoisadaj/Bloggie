@@ -30,36 +30,29 @@ namespace Bloggie.Web.Controllers
 
         public async Task<IActionResult> Index(int page = 1, int pageSize = 5)
         {
-            //UserEmailOptions options = new UserEmailOptions
-            //{
-            //    ToEmails=new List<string>() { "xhoisadaj@gmail.com"},
-            //    PlaceHolders=  new List<KeyValuePair<string, string>>() { 
-            //    new KeyValuePair<string, string>("{{UserName}}","Xhoi")}
-            //};
+            // Getting only visible blogs
+            var blogPosts = (await blogPostRepository.GetAllAsync())
+                                .Where(bp => bp.Visible)
+                                .OrderByDescending(bp => bp.PublishedDate)
+                                .ToList();
 
-         
-            //await emailService.SendTestEmail(options);
-
-            // getting all blogs
-            var blogPosts = await blogPostRepository.GetAllAsync();
-            blogPosts = blogPosts.OrderByDescending(bp => bp.PublishedDate).ToList();
-
-            // Calculate the total number of pages
+            // Calculate the total number of pages based on visible blog posts
             int totalPosts = blogPosts.Count();
             int totalPages = (int)Math.Ceiling((double)totalPosts / pageSize);
 
+            // Validate the page parameter
+            page = Math.Max(1, Math.Min(page, totalPages));
 
+            // Get the paginated visible blog posts
             var paginatedBlogPosts = blogPosts.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-
-            // get all tags
+            // Get all tags
             var tags = await tagRepository.GetAllAsync();
 
             var model = new HomeViewModel
             {
                 BlogPosts = paginatedBlogPosts,
                 Tags = tags,
-
 
                 // Set the TotalPages and Page properties
                 TotalPages = totalPages,

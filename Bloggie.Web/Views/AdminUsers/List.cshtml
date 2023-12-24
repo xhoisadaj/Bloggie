@@ -12,15 +12,7 @@
 
 <div>
     <div class="container py-5">
-
-        <div class="mb-3 d-flex justify-content-end">
-            <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modalCreateUser">
-                Create User
-            </button>
-        </div>
-
-
-        @if (Model.Users is not null || Model.Users.Any())
+        @if (Model != null && Model.Users.Any())
         {
             <table class="table">
                 <thead>
@@ -39,9 +31,9 @@
                             <td>@user.Username</td>
                             <td>@user.EmailAddress</td>
                             <td>
-                                <form method="post" 
-                                      asp-controller="AdminUsers" 
-                                      asp-action="Delete" 
+                                <form method="post"
+                                      asp-controller="AdminUsers"
+                                      asp-action="Delete"
                                       asp-route-id="@user.Id">
                                     <button class="btn btn-danger" type="submit">Delete</button>
                                 </form>
@@ -50,20 +42,47 @@
                     }
                 </tbody>
             </table>
+
+            <div class="pagination">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        @if (Model.PageIndex > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("List", new { page = Model.PageIndex - 1 })" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        }
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("List", new { page = i })">@i</a>
+                            </li>
+                        }
+                        @if (Model.PageIndex < Model.TotalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("List", new { page = Model.PageIndex + 1 })" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
         }
         else
         {
             <p>No users found!</p>
         }
-
-
-
     </div>
+
 </div>
 
 
 <!-- Modal -->
-<form method="post">
+<form method="post" id="createUserForm">
     <div class="modal fade" id="modalCreateUser" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -75,14 +94,17 @@
                     <div class="mb-3">
                         <label class="form-label">Username</label>
                         <input type="text" class="form-control" asp-for="Username" />
+                        <div class="invalid-feedback">Please enter a username.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Email Address</label>
                         <input type="text" class="form-control" asp-for="Email" />
+                        <div class="invalid-feedback">Please enter a valid email address.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Password</label>
                         <input type="password" class="form-control" asp-for="Password" />
+                        <div class="invalid-feedback">Please enter a valid Password.</div>
                     </div>
                     <div class="mb-3">
                         <div class="form-check">
@@ -110,3 +132,82 @@
     </div>
 
 </form>
+
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#Username").on("input", function () {
+            validateUsername();
+        });
+
+        $("#Email").on("input", function () {
+            validateEmail();
+        });
+
+        $("#Password").on("input", function () {
+            validatePassword();
+        });
+
+        function validateUsername() {
+            var username = $("#Username").val();
+            var isValid = isUsernameValid(username);
+
+            if (isValid) {
+                $("#Username").removeClass("is-invalid");
+            } else {
+                $("#Username").addClass("is-invalid");
+            }
+
+            return isValid;
+        }
+
+        function validateEmail() {
+            var email = $("#Email").val();
+            var isValid = isEmailValid(email);
+
+            if (isValid) {
+                $("#Email").removeClass("is-invalid");
+            } else {
+                $("#Email").addClass("is-invalid");
+            }
+
+            return isValid;
+        }
+
+        function validatePassword() {
+            var password = $("#Password").val();
+            var isValid = isPasswordValid(password);
+
+            if (isValid) {
+                $("#Password").removeClass("is-invalid");
+            } else {
+                $("#Password").addClass("is-invalid");
+            }
+
+            return isValid;
+        }
+
+        function isUsernameValid(username) {
+            // Simple username validation: Check if the username field is not empty
+            return username.trim() !== "";
+        }
+
+        function isEmailValid(email) {
+            // Simple email validation: Check if the email field is not empty
+            return email.trim() !== "";
+        }
+
+        function isPasswordValid(password) {
+            // Password validation: Check if the password field is at least 8 characters long
+            return password.length >= 8;
+        }
+
+        $("#createUserForm").submit(function (event) {
+            if (!validateUsername() || !validateEmail() || !validatePassword()) {
+                event.preventDefault();
+            }
+        });
+    });
+</script>
+

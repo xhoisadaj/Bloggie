@@ -14,11 +14,14 @@
     @if (Model != null && Model.Any())
     {
         <table class="table">
+            <!-- ... Existing code ... -->
+
             <thead>
                 <tr>
                     <td>Id</td>
                     <td>Heading</td>
                     <td>Tags</td>
+                    <td>Visible</td> <!-- Add this column -->
                     <td> </td>
                 </tr>
             </thead>
@@ -37,6 +40,10 @@
                             </div>
                         </td>
                         <td>
+                            <input type="checkbox" name="isVisible" @(blogPost.Visible ? "checked" : "")
+                                   onchange="updateVisibility('@blogPost.Id', this.checked)" />
+                        </td>
+                        <td>
                             <a asp-area=""
                                asp-controller="AdminBlogPosts"
                                asp-action="Edit"
@@ -47,11 +54,64 @@
                     </tr>
                 }
             </tbody>
+
+            <!-- ... Existing code ... -->
+
         </table>
+
+        <div class="pagination">
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    @if (ViewBag.PageIndex > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("List", new { page = ViewBag.PageIndex - 1 })" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    }
+                    @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == ViewBag.PageIndex ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("List", new { page = i })">@i</a>
+                        </li>
+                    }
+                    @if (ViewBag.PageIndex < ViewBag.TotalPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("List", new { page = ViewBag.PageIndex + 1 })" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
     }
     else
     {
         <p>No Blog Posts Found!</p>
     }
-
 </div>
+@section Scripts {
+    <script>
+        function updateVisibility(blogPostId, isVisible) {
+            // Send an AJAX request to update visibility
+            fetch(`/AdminBlogPosts/UpdateVisibility?id=${blogPostId}&isVisible=${isVisible}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // You might need additional headers depending on your setup
+                },
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        console.error('Failed to update visibility');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating visibility:', error);
+                });
+        }
+    </script>
+}

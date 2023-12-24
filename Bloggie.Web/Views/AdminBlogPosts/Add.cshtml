@@ -108,11 +108,15 @@
 
 
         <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" id="visible" asp-for="Visible">
-            <label class="form-check-label">
-                Is Visible?
-            </label>
+            @if (User.IsInRole("Admin"))
+            {
+                <input class="form-check-input" type="checkbox" id="visible" asp-for="Visible">
+                <label class="form-check-label">
+                    Is Visible?
+                </label>
+            }
         </div>
+
 
         <div class="mb-3">
             <label class="form-label">Tags</label>

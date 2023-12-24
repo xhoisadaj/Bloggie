@@ -49,13 +49,27 @@ namespace Bloggie.Web.Controllers
 
         [HttpGet]
         [ActionName("List")]
-        public async Task<IActionResult> List()
+        public async Task<IActionResult> List(int? page)
         {
-            // use dbContext to read the tags
+            const int pageSize = 5; // Number of tags per page
+
             var tags = await tagRepository.GetAllAsync();
 
-            return View(tags);
+            // Sort tags by ID (or any other property you want to use for sorting)
+            tags = tags.OrderBy(t => t.Id).ToList();
+
+            // Ensure page has a value, default to 1 if not
+            var pageIndex = page.HasValue ? page.Value : 1;
+
+            // Perform calculations using pageIndex
+            var paginatedTags = tags.Skip((pageIndex - 1) * pageSize).Take(pageSize);
+
+            ViewBag.PageIndex = pageIndex;
+            ViewBag.TotalPages = (int)Math.Ceiling(tags.Count() / (double)pageSize);
+
+            return View(paginatedTags.ToList());
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Edit(Guid id)

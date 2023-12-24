@@ -20,22 +20,32 @@ namespace Bloggie.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> List()
+        public async Task<IActionResult> List(int? page)
         {
+            const int pageSize = 5; // Number of users per page
+
             var users = await userRepository.GetAll();
 
             var usersViewModel = new UserViewModel();
-            usersViewModel.Users = new List<User>();
-
-            foreach (var user in users)
-            {
-                usersViewModel.Users.Add(new Models.ViewModels.User
+            usersViewModel.Users = users
+                .Select(user => new Models.ViewModels.User
                 {
                     Id = Guid.Parse(user.Id),
                     Username = user.UserName,
                     EmailAddress = user.Email
-                });
-            }
+                })
+                .OrderByDescending(user => user.Id)
+                .ToList();
+
+            // Ensure page has a value, default to 1 if not
+            var pageIndex = page ?? 1;
+
+            // Perform calculations using pageIndex
+            var paginatedUsers = usersViewModel.Users.Skip((pageIndex - 1) * pageSize).Take(pageSize);
+
+            usersViewModel.Users = paginatedUsers.ToList();
+            usersViewModel.PageIndex = pageIndex;
+            usersViewModel.TotalPages = (int)Math.Ceiling(usersViewModel.Users.Count / (double)pageSize);
 
             return View(usersViewModel);
         }

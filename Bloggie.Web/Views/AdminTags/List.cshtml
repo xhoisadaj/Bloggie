@@ -37,10 +37,38 @@
                 }
             </tbody>
         </table>
+
+        <div class="pagination">
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    @if (ViewBag.PageIndex > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("List", new { page = ViewBag.PageIndex - 1 })" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    }
+                    @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == ViewBag.PageIndex ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("List", new { page = i })">@i</a>
+                        </li>
+                    }
+                    @if (ViewBag.PageIndex < ViewBag.TotalPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("List", new { page = ViewBag.PageIndex + 1 })" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
     }
     else
     {
         <p>No tags found!</p>
     }
 </div>
-
