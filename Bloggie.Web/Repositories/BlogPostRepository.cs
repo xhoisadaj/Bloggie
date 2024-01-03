@@ -12,11 +12,26 @@ namespace Bloggie.Web.Repositories
         {
             this.bloggieDbContext = bloggieDbContext;
         }
-
-        public async Task<BlogPost> AddAsync(BlogPost blogPost)
+        public async Task<IEnumerable<BlogPost>> GetByUserIdAsync(string userId)
         {
+            return await bloggieDbContext.BlogPosts
+                .Include(post => post.Tags)  // Include tags in the query
+                .Where(post => post.UserId == userId)
+                .ToListAsync();
+        }
+
+        public async Task<BlogPost> AddAsync(BlogPost blogPost, string userId)
+        {
+            // Set the UserId property
+            blogPost.UserId = userId;
+
+            // Add the blog post to the context
             await bloggieDbContext.AddAsync(blogPost);
+
+            // Save changes to the database
             await bloggieDbContext.SaveChangesAsync();
+
+            // Return the added blog post
             return blogPost;
         }
 
@@ -49,6 +64,7 @@ namespace Bloggie.Web.Repositories
             return await bloggieDbContext.BlogPosts.Include(x => x.Tags)
                 .FirstOrDefaultAsync(x => x.UrlHandle == urlHandle);
         }
+
 
         public async Task<BlogPost?> UpdateAsync(BlogPost blogPost)
         {

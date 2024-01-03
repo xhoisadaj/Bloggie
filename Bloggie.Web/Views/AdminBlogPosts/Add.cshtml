@@ -11,6 +11,15 @@
         <h1>Add New BlogPost </h1>
     </div>
 </div>
+@if (TempData["SuccessMessage"] != null)
+{
+    <div id="success-toast" class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-body">
+            @TempData["SuccessMessage"]
+        </div>
+    </div>
+}
+
 
 <div class="container py-5">
     <form method="post" enctype="multipart/form-data" asp-controller="AdminBlogPosts" asp-action="Add" class="container needs-validation" novalidate>
@@ -53,26 +62,28 @@
             </div>
 
         </div>
-        <div class="mb-3">
-            <label class="form-label">Document Upload</label>
-            <input type="file" id="documentUpload" name="DocumentUpload" class="form-control" />
+     <div class="mb-3">
+    <label class="form-label">Document Upload</label>
+    <input type="file" id="documentUpload" name="DocumentUpload" class="form-control" accept=".pdf, .doc, .docx, .xls, .xlsx" />
 
-            <div class="invalid-feedback" asp-validation-for="DocumentUpload">
-                @Html.ValidationMessageFor(model => model.DocumentUpload)
-            </div>
-        </div>
+    <div class="invalid-feedback" asp-validation-for="DocumentUpload">
+        @Html.ValidationMessageFor(model => model.DocumentUpload)
+    </div>
+</div>
+
+
 
         <div class="mb-3">
             <label class="form-label">Featured Image Upload</label>
-            <input type="file" id="featuredImageUpload" class="form-control" />
-           
+            <input type="file" id="featuredImageUpload" name="FeaturedImageUpload" class="form-control" accept=".jpg, .jpeg, .png" />
+
             <div class="invalid-feedback" asp-validation-for="featuredImageUpload">
                 Featured Image Upload is required.
             </div>
-     
 
             <img src="" id="featuredImageDisplay" style="display:none;width: 300px;" />
         </div>
+
 
         <div class="mb-3">
             <label class="form-label">Featured Image URL</label>

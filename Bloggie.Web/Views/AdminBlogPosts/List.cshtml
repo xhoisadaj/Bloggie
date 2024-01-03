@@ -1,30 +1,36 @@
 ﻿@model List<Bloggie.Web.Models.Domain.BlogPost>
-
-@{
-}
-
-<div class="bg-secondary bg-opacity-10 py-2">
-    <div class="container">
-        <h1>All BlogPosts - Admin Functionality</h1>
+@if (TempData["SuccessMessage"] != null)
+{
+    <div id="success-toast" class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-body">
+            @TempData["SuccessMessage"]
+        </div>
     </div>
-</div>
+}
+<div class="container">
+    <h1>@(User.IsInRole("Admin") ? "All Blog Posts" : "My Blog Posts")</h1>
 
-
-<div class="container py-5">
     @if (Model != null && Model.Any())
     {
         <table class="table">
-            <!-- ... Existing code ... -->
-
             <thead>
                 <tr>
-                    <td>Id</td>
-                    <td>Heading</td>
-                    <td>Tags</td>
-                    <td>Visible</td> <!-- Add this column -->
-                    <td> </td>
+                    <th>Id</th>
+                    <th>Heading</th>
+                    <th>Tags</th>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <th>Visible</th>
+                    }
+                    @if (User.IsInRole("User") && !User.IsInRole("Admin"))
+                    {
+                        <th>Approval</th> <!-- New column for approval status -->
+                    }
+                    <th></th>
+                    <th></th>
                 </tr>
             </thead>
+
             <tbody>
                 @foreach (var blogPost in Model)
                 {
@@ -32,17 +38,40 @@
                         <td>@blogPost.Id</td>
                         <td>@blogPost.Heading</td>
                         <td>
-                            <div class="d-flex">
-                                @foreach (var tag in blogPost.Tags)
+                            @if (blogPost.Tags != null && blogPost.Tags.Any())
+                            {
+                                <div class="d-flex">
+                                    @foreach (var tag in blogPost.Tags)
+                                    {
+                                        <span class="badge bg-secondary me-1">@tag.Name</span>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <span>No Tags</span>
+                            }
+                        </td>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <td>
+                                <input type="checkbox" name="isVisible" @(blogPost.Visible ? "checked" : "")
+                                       onchange="updateVisibility('@blogPost.Id', this.checked)" />
+                            </td>
+                        }
+                        @if (User.IsInRole("User") && !User.IsInRole("Admin"))
+                        {
+                            <td>
+                                @if (blogPost.Visible)
                                 {
-                                    <span class="badge bg-secondary me-1">@tag.Name</span>
+                                    <span class="badge bg-success">Approved</span>
                                 }
-                            </div>
-                        </td>
-                        <td>
-                            <input type="checkbox" name="isVisible" @(blogPost.Visible ? "checked" : "")
-                                   onchange="updateVisibility('@blogPost.Id', this.checked)" />
-                        </td>
+                                else
+                                {
+                                    <span class="badge bg-danger">Not Approved</span>
+                                }
+                            </td>
+                        }
                         <td>
                             <a asp-area=""
                                asp-controller="AdminBlogPosts"
@@ -54,8 +83,6 @@
                     </tr>
                 }
             </tbody>
-
-            <!-- ... Existing code ... -->
 
         </table>
 
@@ -93,6 +120,7 @@
         <p>No Blog Posts Found!</p>
     }
 </div>
+
 @section Scripts {
     <script>
         function updateVisibility(blogPostId, isVisible) {

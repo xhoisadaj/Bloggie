@@ -96,6 +96,7 @@ namespace Bloggie.Web.Controllers
             return View(blogDetailsViewModel);
         }
 
+      
 
         [HttpPost]
         public async Task<IActionResult> Index(BlogDetailsViewModel blogDetailsViewModel)

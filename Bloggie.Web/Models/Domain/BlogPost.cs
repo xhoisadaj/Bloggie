@@ -16,6 +16,9 @@
         // New property for document file name
         public string? DocumentFileName { get; set; }
 
+        // New property for UserId
+        public string UserId { get; set; }
+
         // Navigation property
         public ICollection<Tag> Tags { get; set; }
 
