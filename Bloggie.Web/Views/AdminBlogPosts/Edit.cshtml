@@ -45,7 +45,8 @@
 
             <div class="mb-3">
                 <label asp-for="DocumentUpload"></label>
-                <input type="file" name="documentUpload" class="form-control" />
+                <input type="file" id="documentUpload" name="DocumentUpload" class="form-control" accept=".pdf, .doc, .docx, .xls, .xlsx" />
+
                 <div>
                     <h4>Attached Document</h4>
                     <a href="@Url.Content($"~/documents/{Model.DocumentFileName}")" target="_blank">View Attached Document</a>
@@ -54,7 +55,7 @@
 
             <div class="mb-3">
                 <label class="form-label">Featured Image Upload</label>
-                <input type="file" id="featuredImageUpload" class="form-control" />
+                <input type="file" id="featuredImageUpload" name="FeaturedImageUpload" class="form-control" accept=".jpg, .jpeg, .png" />
 
                 @if (Model.FeaturedImageUrl != null)
                 {
