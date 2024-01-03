@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 
 namespace Bloggie.Web.Models.ViewModels
 {
@@ -15,7 +16,11 @@ namespace Bloggie.Web.Models.ViewModels
         public string Author { get; set; }
         public bool Visible { get; set; }
 
+        [Display(Name = "Document File Name")]
+        public string? DocumentFileName { get; set; }
 
+        [Display(Name = "Document Upload")]
+        public IFormFile DocumentUpload { get; set; }
         // Display tags
         public IEnumerable<SelectListItem> Tags { get; set; }
         // Collect Tag

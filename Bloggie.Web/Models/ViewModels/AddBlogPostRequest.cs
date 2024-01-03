@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Bloggie.Web.Models.ViewModels
@@ -16,11 +19,11 @@ namespace Bloggie.Web.Models.ViewModels
 
         [Required(ErrorMessage = "Short Description is required.")]
         public string ShortDescription { get; set; }
+
         [Required(ErrorMessage = "Featured image url is required.")]
-
         public string FeaturedImageUrl { get; set; }
-        [Required(ErrorMessage = "Url handle is required.")]
 
+        [Required(ErrorMessage = "Url handle is required.")]
         public string UrlHandle { get; set; }
 
         [Required(ErrorMessage = "Published Date is required.")]
@@ -28,11 +31,16 @@ namespace Bloggie.Web.Models.ViewModels
 
         [Required(ErrorMessage = "Author is required.")]
         public string Author { get; set; }
+
         public bool Visible { get; set; }
 
+        // Document upload property
+        [Display(Name = "Document Upload")]
+        public IFormFile DocumentUpload { get; set; }
 
         // Display tags
         public IEnumerable<SelectListItem> Tags { get; set; }
+
         // Collect Tag
         [Required(ErrorMessage = "At least one tag must be selected.")]
         public string[] SelectedTags { get; set; } = Array.Empty<string>();

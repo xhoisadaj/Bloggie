@@ -57,6 +57,13 @@
                     {
                         <div id="documentContainer"></div>
                     }
+                    @if (!string.IsNullOrEmpty(Model.DocumentFileName))
+                    {
+                        <div>
+                            <h4>Attached Document</h4>
+                            <a href="@Url.Content($"~/documents/{Model.DocumentFileName}")" target="_blank">View Attached Document</a>
+                        </div>
+                    }
                 </div>
 
 
@@ -137,9 +144,6 @@
 
 @section Scripts {
     <script>
-    
-
-
         const documentContainer = document.getElementById('documentContainer');
 
         function extractDocumentLinks(content) {
@@ -153,27 +157,17 @@
             link.className = 'btn btn-primary mt-3 download-button';
             link.innerHTML = 'Download File';
 
-            link.addEventListener('click', () => {
+            // Add the download attribute to trigger the download behavior
+            link.setAttribute('download', '');
+
+            link.addEventListener('click', (event) => {
+                event.preventDefault(); // Prevent the default behavior (navigation)
+
+                // Call your download function here
                 downloadFile(anchorTag.href);
             });
 
             return link;
-        }
-
-        const documentLinks = extractDocumentLinks('@Html.Raw(Model.Content)');
-
-        if (documentContainer && documentLinks.length > 0) {
-            documentLinks.forEach(docLink => {
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = docLink;
-
-                const anchorTag = tempDiv.querySelector('.fr-file');
-
-                if (anchorTag) {
-                    const downloadButton = createDownloadButton(anchorTag);
-                    documentContainer.appendChild(downloadButton);
-                }
-            });
         }
 
         function downloadFile(url) {
@@ -202,26 +196,24 @@
                 });
         }
 
-        function createDownloadButton(anchorTag) {
-            const link = document.createElement('a');
-            link.href = anchorTag.href; // Assuming href attribute contains the download URL
-            link.className = 'btn btn-primary mt-3 download-button';
-            link.innerHTML = 'Download File';
+        const documentLinks = extractDocumentLinks('@Html.Raw(Model.Content)');
 
-            // Add the download attribute to trigger the download behavior
-            link.setAttribute('download', '');
+        if (documentContainer && documentLinks.length > 0) {
+            documentLinks.forEach(docLink => {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = docLink;
 
-            link.addEventListener('click', (event) => {
-                event.preventDefault(); // Prevent the default behavior (navigation)
+                const anchorTag = tempDiv.querySelector('.fr-file');
 
-                // Call your download function here
-                downloadFile(anchorTag.href);
+                if (anchorTag) {
+                    const downloadButton = createDownloadButton(anchorTag);
+                    documentContainer.appendChild(downloadButton);
+                }
             });
-
-            return link;
         }
-
     </script>
+
+
     <script>
         const btnLikeElement = document.getElementById('btnLike');
         const totalLikeElement = document.getElementById('totalLikes');

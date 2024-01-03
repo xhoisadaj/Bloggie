@@ -1,16 +1,52 @@
 ﻿<!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8" />
-    <title></title>
-</head>
-<body>
-    <p>
-        Hello {{UserName}}, <br />
-        Thank you for using the Book store web application. <br />
-        You have created a new account on book store application. <br /> <br />
-        Click on the following link to verify your email id. <br /><br />
+    <title>Email Template</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
 
-        <a href="{{Link}}">Verify email</a>
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        p {
+            margin-bottom: 20px;
+        }
+
+        a {
+            display: inline-block;
+            padding: 10px 20px;
+            text-decoration: none;
+            background-color: #3498db;
+            color: #ffffff;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <p>
+            Hello {{UserName}}, <br />
+            Thank you for using the Blog application. <br />
+            You have created a new account on the blog application. <br /> <br />
+            Click on the following link to verify your email id. <br /><br />
+
+            <a href="{{Link}}">Verify email</a>
+        </p>
+    </div>
 </body>
+
 </html>

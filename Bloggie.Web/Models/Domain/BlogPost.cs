@@ -13,6 +13,9 @@
         public string Author { get; set; }
         public bool Visible { get; set; }
 
+        // New property for document file name
+        public string? DocumentFileName { get; set; }
+
         // Navigation property
         public ICollection<Tag> Tags { get; set; }
 

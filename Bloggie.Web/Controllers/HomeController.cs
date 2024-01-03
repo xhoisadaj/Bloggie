@@ -54,6 +54,7 @@ namespace Bloggie.Web.Controllers
                 BlogPosts = paginatedBlogPosts,
                 Tags = tags,
 
+
                 // Set the TotalPages and Page properties
                 TotalPages = totalPages,
                 Page = page

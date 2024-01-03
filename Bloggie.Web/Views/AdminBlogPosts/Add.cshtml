@@ -13,7 +13,7 @@
 </div>
 
 <div class="container py-5">
-    <form method="post" class="container needs-validation" novalidate>
+    <form method="post" enctype="multipart/form-data" asp-controller="AdminBlogPosts" asp-action="Add" class="container needs-validation" novalidate>
 
         <div class="mb-3" validate-me>
             <label class="form-label">Heading</label>
@@ -52,6 +52,14 @@
                 Short Description is required.
             </div>
 
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Document Upload</label>
+            <input type="file" id="documentUpload" name="DocumentUpload" class="form-control" />
+
+            <div class="invalid-feedback" asp-validation-for="DocumentUpload">
+                @Html.ValidationMessageFor(model => model.DocumentUpload)
+            </div>
         </div>
 
         <div class="mb-3">

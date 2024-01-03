@@ -85,8 +85,10 @@ namespace Bloggie.Web.Controllers
                     Visible = blogPost.Visible,
                     Tags = blogPost.Tags,
                     TotalLikes = totalLikes,
+                    DocumentFileName = blogPost.DocumentFileName,
                     Liked = liked,
                     Comments = blogCommentsForView
+
                 };
 
             }

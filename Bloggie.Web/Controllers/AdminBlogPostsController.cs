@@ -13,11 +13,13 @@ namespace Bloggie.Web.Controllers
     {
         private readonly ITagRepository tagRepository;
         private readonly IBlogPostRepository blogPostRepository;
+        private readonly IWebHostEnvironment _hostingEnvironment;
 
-        public AdminBlogPostsController(ITagRepository tagRepository, IBlogPostRepository blogPostRepository)
+        public AdminBlogPostsController(ITagRepository tagRepository, IBlogPostRepository blogPostRepository, IWebHostEnvironment hostingEnvironment)
         {
             this.tagRepository = tagRepository;
             this.blogPostRepository = blogPostRepository;
+            _hostingEnvironment = hostingEnvironment;
         }
 
 
@@ -51,6 +53,9 @@ namespace Bloggie.Web.Controllers
                 PublishedDate = addBlogPostRequest.PublishedDate,
                 Author = addBlogPostRequest.Author,
                 Visible = addBlogPostRequest.Visible,
+                DocumentFileName = addBlogPostRequest.DocumentUpload != null ?
+                                  await SaveDocumentLocally(addBlogPostRequest.DocumentUpload) :
+                                  null,
             };
 
             // Map Tags from selected tags
@@ -86,6 +91,29 @@ namespace Bloggie.Web.Controllers
 
             return RedirectToAction("Add");
         }
+
+        private async Task<string> SaveDocumentLocally(IFormFile documentUpload)
+        {
+            if (documentUpload == null || documentUpload.Length == 0)
+            {
+                // No file uploaded
+                return null;
+            }
+
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(documentUpload.FileName);
+            var filePath = Path.Combine(_hostingEnvironment.WebRootPath, "documents", fileName);
+
+            // Log the file path
+            Console.WriteLine($"File will be saved to: {filePath}");
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await documentUpload.CopyToAsync(fileStream);
+            }
+
+            return fileName;
+        }
+
 
         [HttpGet]
         public async Task<IActionResult> List(int? page)
@@ -142,20 +170,25 @@ namespace Bloggie.Web.Controllers
                 };
 
                 return View(model);
-
             }
 
-            // pass data to view
+            // Pass data to view
             return View(null);
         }
-
-
-
-
         [HttpPost]
-        public async Task<IActionResult> Edit(EditBlogPostRequest editBlogPostRequest)
+        public async Task<IActionResult> Edit(EditBlogPostRequest editBlogPostRequest, IFormFile documentUpload)
         {
-            // map view model back to domain model
+            // Retrieve the existing blog post from the repository
+            var existingBlog = await blogPostRepository.GetAsync(editBlogPostRequest.Id);
+
+            if (existingBlog == null)
+            {
+                // Handle the case where the blog post with the provided Id is not found
+                // You might want to add some error handling or redirect to an error page
+                return RedirectToAction("List");
+            }
+
+            // Map view model back to domain model
             var blogPostDomainModel = new BlogPost
             {
                 Id = editBlogPostRequest.Id,
@@ -167,11 +200,10 @@ namespace Bloggie.Web.Controllers
                 FeaturedImageUrl = editBlogPostRequest.FeaturedImageUrl,
                 PublishedDate = editBlogPostRequest.PublishedDate,
                 UrlHandle = editBlogPostRequest.UrlHandle,
-                Visible = editBlogPostRequest.Visible
+                Visible = editBlogPostRequest.Visible,
             };
 
             // Map tags into domain model
-
             var selectedTags = new List<Tag>();
             foreach (var selectedTag in editBlogPostRequest.SelectedTags)
             {
@@ -188,21 +220,45 @@ namespace Bloggie.Web.Controllers
 
             blogPostDomainModel.Tags = selectedTags;
 
+            // Check if a new document is uploaded in the edit form
+            if (documentUpload != null && documentUpload.Length > 0)
+            {
+                // Save the new document locally
+                blogPostDomainModel.DocumentFileName = await SaveDocumentLocally(documentUpload);
+            }
+            else
+            {
+                // No new document uploaded, retain the existing DocumentFileName
+                blogPostDomainModel.DocumentFileName = existingBlog.DocumentFileName;
+            }
 
+            // Log the document file name
+            Console.WriteLine($"DocumentFileName: {blogPostDomainModel.DocumentFileName}");
 
-            // Submit information to repository to update
-            var updatedBlog =  await blogPostRepository.UpdateAsync(blogPostDomainModel);
+            // Update other properties and DocumentFileName in the existing blog post
+            existingBlog.Heading = blogPostDomainModel.Heading;
+            existingBlog.PageTitle = blogPostDomainModel.PageTitle;
+            existingBlog.Content = blogPostDomainModel.Content;
+            existingBlog.Author = blogPostDomainModel.Author;
+            existingBlog.ShortDescription = blogPostDomainModel.ShortDescription;
+            existingBlog.FeaturedImageUrl = blogPostDomainModel.FeaturedImageUrl;
+            existingBlog.PublishedDate = blogPostDomainModel.PublishedDate;
+            existingBlog.UrlHandle = blogPostDomainModel.UrlHandle;
+            existingBlog.Visible = blogPostDomainModel.Visible;
+            existingBlog.Tags = blogPostDomainModel.Tags;
+            existingBlog.DocumentFileName = blogPostDomainModel.DocumentFileName;
 
-
+            // Update the existing blog post in the repository
+            var updatedBlog = await blogPostRepository.UpdateAsync(existingBlog);
 
             if (updatedBlog != null)
             {
                 // Show success notification
-                return RedirectToAction("Edit");
+                return RedirectToAction("Edit", new { id = editBlogPostRequest.Id });
             }
 
             // Show error notification
-            return RedirectToAction("Edit");
+            return RedirectToAction("Edit", new { id = editBlogPostRequest.Id });
         }
 
         [HttpPost]
