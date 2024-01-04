@@ -45,6 +45,7 @@ namespace Bloggie.Web.Controllers
             await tagRepository.AddAsync(tag);
 
             return RedirectToAction("List");
+
         }
 
         [HttpGet]

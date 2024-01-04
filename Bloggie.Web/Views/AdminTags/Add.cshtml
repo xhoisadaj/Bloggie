@@ -1,7 +1,22 @@
 ﻿@model Bloggie.Web.Models.ViewModels.AddTagRequest
 @{
 }
-
+@if (TempData["SuccessMessage"] != null)
+{
+    <div id="success-toast" class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-body">
+            @TempData["SuccessMessage"]
+        </div>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div id="success-toast" class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-body">
+            @TempData["ErrorMessage"]
+        </div>
+    </div>
+}
 
 <div class="bg-secondary bg-opacity-10 py-2">
     <div class="container">
@@ -32,6 +47,18 @@
         <div class="mb-3">
             <button type="submit" class="btn btn-dark">Submit</button>
         </div>
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                <strong>Error!</strong> Please correct the following issues:
+                <ul>
+                    @foreach (var modelError in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@modelError.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
     </form>
 </div>
 @section Scripts {
