@@ -34,9 +34,8 @@ namespace Bloggie.Web.Models.ViewModels
 
         public bool Visible { get; set; }
 
-        // Document upload property
-        [Display(Name = "Document Upload")]
-        public IFormFile DocumentUpload { get; set; }
+        [Required(ErrorMessage = "Please select one or more documents.")]
+        public List<IFormFile> DocumentUpload { get; set; }
 
         // Display tags
         public IEnumerable<SelectListItem> Tags { get; set; }

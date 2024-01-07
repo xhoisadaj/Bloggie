@@ -57,13 +57,23 @@
                     {
                         <div id="documentContainer"></div>
                     }
-                    @if (!string.IsNullOrEmpty(Model.DocumentFileName))
+                    @if (Model.DocumentFileNames != null && Model.DocumentFileNames.Any())
                     {
                         <div>
-                            <h4>Attached Document</h4>
-                            <a href="@Url.Content($"~/documents/{Model.DocumentFileName}")" target="_blank">View Attached Document</a>
+                            <h4>Attached Documents</h4>
+                            <ul>
+                                @foreach (var documentFile in Model.DocumentFileNames)
+                                {
+                                    <li>
+                                        <a href="@Url.Content($"~/documents/{documentFile.FileName}")" target="_blank">
+                                            View Attached Document @documentFile.FileName
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
                         </div>
                     }
+
                 </div>
 
 

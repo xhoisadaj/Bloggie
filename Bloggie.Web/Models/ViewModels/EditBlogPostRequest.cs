@@ -16,8 +16,12 @@ namespace Bloggie.Web.Models.ViewModels
         public string Author { get; set; }
         public bool Visible { get; set; }
 
-        [Display(Name = "Document File Name")]
-        public string? DocumentFileName { get; set; }
+        [Display(Name = "Document File Names")]
+        public ICollection<string> DocumentFileNames { get; set; } // Add this line
+
+        [Display(Name = "Document Upload")]
+        public List<IFormFile> DocumentUploads { get; set; } // Modify this line
+
 
         [Display(Name = "Document Upload")]
         public IFormFile DocumentUpload { get; set; }

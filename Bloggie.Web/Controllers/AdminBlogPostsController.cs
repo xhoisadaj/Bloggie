@@ -17,15 +17,18 @@ namespace Bloggie.Web.Controllers
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly SignInManager<IdentityUser> signInManager;
         private readonly UserManager<IdentityUser> userManager;
+        private readonly IDocumentFileNamesRepository documentFileNamesRepository;
 
-        public AdminBlogPostsController(ITagRepository tagRepository, IBlogPostRepository blogPostRepository, IWebHostEnvironment hostingEnvironment, SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager)
+        public AdminBlogPostsController(ITagRepository tagRepository, IBlogPostRepository blogPostRepository, IWebHostEnvironment hostingEnvironment, SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager, IDocumentFileNamesRepository documentFileNamesRepository)
         {
             this.tagRepository = tagRepository;
             this.blogPostRepository = blogPostRepository;
             _hostingEnvironment = hostingEnvironment;
             this.signInManager = signInManager;
             this.userManager = userManager;
+            this.documentFileNamesRepository = documentFileNamesRepository;
         }
+
 
 
         [HttpGet]
@@ -41,9 +44,8 @@ namespace Bloggie.Web.Controllers
 
             return View(model);
         }
-
         [HttpPost]
-        public async Task<IActionResult> Add(AddBlogPostRequest addBlogPostRequest)
+        public async Task<IActionResult> Add(AddBlogPostRequest addBlogPostRequest, List<IFormFile> documentUploads)
         {
             if (signInManager.IsSignedIn(User))
             {
@@ -58,12 +60,10 @@ namespace Bloggie.Web.Controllers
                     ShortDescription = addBlogPostRequest.ShortDescription,
                     FeaturedImageUrl = addBlogPostRequest.FeaturedImageUrl,
                     UrlHandle = addBlogPostRequest.UrlHandle,
-                    PublishedDate = addBlogPostRequest.PublishedDate,
+                    PublishedDate = addBlogPostRequest.PublishedDate.Date + DateTime.Now.TimeOfDay,
                     Author = addBlogPostRequest.Author,
                     Visible = addBlogPostRequest.Visible,
-                    DocumentFileName = addBlogPostRequest.DocumentUpload != null ?
-                                      await SaveDocumentLocally(addBlogPostRequest.DocumentUpload) :
-                                      null,
+                    UserId = userId,
                 };
 
                 // Map Tags from selected tags
@@ -82,11 +82,41 @@ namespace Bloggie.Web.Controllers
                 // Mapping tags back to domain model
                 blogPost.Tags = selectedTags;
 
+                // Save the BlogPost to the database first
                 var result = await blogPostRepository.AddAsync(blogPost, userId);
 
                 // Check if the operation was successful
                 if (result != null)
                 {
+                    var documentFileNames = new List<DocumentFileNames>();
+
+                    // Check if documents were uploaded
+                    // Save each document locally and create DocumentFileNames entities
+                    foreach (var documentUpload in documentUploads)
+                    {
+                        var (documentFileName, documentFilePath) = await SaveDocumentLocally(documentUpload);
+
+                        // Create DocumentFileNames entity
+                        var documentEntity = new DocumentFileNames
+                        {
+                            FileName = documentFileName,
+                            FilePath = documentFilePath,
+                            BlogPostId = blogPost.Id,
+                            Id = Guid.NewGuid(),
+                        };
+
+                        documentFileNames.Add(documentEntity);
+                    }
+
+                    // Save the DocumentFileNames entities to the database
+                    await documentFileNamesRepository.AddRangeAsync(documentFileNames);
+
+                    // Set DocumentFileNames property of the blog post
+                    blogPost.DocumentFileNames = documentFileNames;
+
+                    // Update the blog post to include the associated documents
+                    await blogPostRepository.UpdateAsync(blogPost);
+
                     // Set success message in TempData
                     TempData["SuccessMessage"] = "Blog post added successfully!";
                     return RedirectToAction("List"); // Redirect to the blog post list
@@ -103,12 +133,12 @@ namespace Bloggie.Web.Controllers
             return View(addBlogPostRequest);
         }
 
-        private async Task<string> SaveDocumentLocally(IFormFile documentUpload)
+        private async Task<(string FileName, string FilePath)> SaveDocumentLocally(IFormFile documentUpload)
         {
             if (documentUpload == null || documentUpload.Length == 0)
             {
                 // No file uploaded
-                return null;
+                return (null, null);
             }
 
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(documentUpload.FileName);
@@ -122,8 +152,9 @@ namespace Bloggie.Web.Controllers
                 await documentUpload.CopyToAsync(fileStream);
             }
 
-            return fileName;
+            return (fileName, filePath);
         }
+
 
 
         [HttpGet]
@@ -160,16 +191,18 @@ namespace Bloggie.Web.Controllers
             return View(paginatedBlogPosts);
         }
 
-
         [HttpGet]
+        
         public async Task<IActionResult> Edit(Guid id)
         {
-            // Retrieve the result from the repository 
             var blogPost = await blogPostRepository.GetAsync(id);
             var tagsDomainModel = await tagRepository.GetAllAsync();
 
             if (blogPost != null)
             {
+                // Get document information for the blog post
+                var documentFileNames = await documentFileNamesRepository.GetDocumentsByBlogPostIdAsync(blogPost.Id);
+
                 // map the domain model into the view model
                 var model = new EditBlogPostRequest
                 {
@@ -182,14 +215,14 @@ namespace Bloggie.Web.Controllers
                     UrlHandle = blogPost.UrlHandle,
                     ShortDescription = blogPost.ShortDescription,
                     PublishedDate = blogPost.PublishedDate,
-                    DocumentFileName = blogPost.DocumentFileName,
                     Visible = blogPost.Visible,
                     Tags = tagsDomainModel.Select(x => new SelectListItem
                     {
                         Text = x.Name,
                         Value = x.Id.ToString()
                     }),
-                    SelectedTags = blogPost.Tags.Select(x => x.Id.ToString()).ToArray()
+                    SelectedTags = blogPost.Tags.Select(x => x.Id.ToString()).ToArray(),
+                    DocumentFileNames = documentFileNames.Select(df => df.FileName).ToList() // Add this line to populate DocumentFileNames in the view model
                 };
 
                 return View(model);
@@ -198,8 +231,9 @@ namespace Bloggie.Web.Controllers
             // Pass data to view
             return View(null);
         }
+
         [HttpPost]
-        public async Task<IActionResult> Edit(EditBlogPostRequest editBlogPostRequest, IFormFile documentUpload)
+        public async Task<IActionResult> Edit(EditBlogPostRequest editBlogPostRequest, List<IFormFile> documentUploads)
         {
             // Retrieve the existing blog post from the repository
             var existingBlog = await blogPostRepository.GetAsync(editBlogPostRequest.Id);
@@ -221,7 +255,7 @@ namespace Bloggie.Web.Controllers
                 Author = editBlogPostRequest.Author,
                 ShortDescription = editBlogPostRequest.ShortDescription,
                 FeaturedImageUrl = editBlogPostRequest.FeaturedImageUrl,
-                PublishedDate = editBlogPostRequest.PublishedDate,
+                PublishedDate = editBlogPostRequest.PublishedDate.Date + DateTime.Now.TimeOfDay,
                 UrlHandle = editBlogPostRequest.UrlHandle,
                 Visible = editBlogPostRequest.Visible,
             };
@@ -243,44 +277,64 @@ namespace Bloggie.Web.Controllers
 
             blogPostDomainModel.Tags = selectedTags;
 
-            // Check if a new document is uploaded in the edit form
-            if (documentUpload != null && documentUpload.Length > 0)
-            {
-                // Save the new document locally
-                blogPostDomainModel.DocumentFileName = await SaveDocumentLocally(documentUpload);
-            }
-            else
-            {
-                // No new document uploaded, retain the existing DocumentFileName
-                blogPostDomainModel.DocumentFileName = existingBlog.DocumentFileName;
-            }
-
-            // Log the document file name
-            Console.WriteLine($"DocumentFileName: {blogPostDomainModel.DocumentFileName}");
-
-            // Update other properties and DocumentFileName in the existing blog post
+            // Update other properties in the existing blog post
             existingBlog.Heading = blogPostDomainModel.Heading;
             existingBlog.PageTitle = blogPostDomainModel.PageTitle;
             existingBlog.Content = blogPostDomainModel.Content;
             existingBlog.Author = blogPostDomainModel.Author;
             existingBlog.ShortDescription = blogPostDomainModel.ShortDescription;
             existingBlog.FeaturedImageUrl = blogPostDomainModel.FeaturedImageUrl;
-            existingBlog.PublishedDate = blogPostDomainModel.PublishedDate;
+            existingBlog.PublishedDate = blogPostDomainModel.PublishedDate.Date + DateTime.Now.TimeOfDay;
             existingBlog.UrlHandle = blogPostDomainModel.UrlHandle;
             existingBlog.Visible = blogPostDomainModel.Visible;
             existingBlog.Tags = blogPostDomainModel.Tags;
-            existingBlog.DocumentFileName = blogPostDomainModel.DocumentFileName;
 
-            // Update the existing blog post in the repository
-            var updatedBlog = await blogPostRepository.UpdateAsync(existingBlog);
+            // Get existing document information for the blog post
+            var existingDocuments = await documentFileNamesRepository.GetDocumentsByBlogPostIdAsync(existingBlog.Id);
 
-            if (updatedBlog != null)
+            // Delete documents that were removed in the edit view
+            var documentsToRemove = existingDocuments
+                .Where(doc => !documentUploads.Any(uploadedDoc => uploadedDoc.FileName == doc.FileName))
+                .ToList();
+
+            foreach (var docToRemove in documentsToRemove)
             {
-                // Show success notification
-                return RedirectToAction("Edit", new { id = editBlogPostRequest.Id });
+                // Remove from storage
+                var docFilePath = Path.Combine(_hostingEnvironment.WebRootPath, "documents", docToRemove.FileName);
+                if (System.IO.File.Exists(docFilePath))
+                {
+                    System.IO.File.Delete(docFilePath);
+                }
+
+                // Remove from database
+                await documentFileNamesRepository.DeleteAsync(docToRemove.Id);
             }
 
-            // Show error notification
+            // Save newly uploaded documents
+            foreach (var documentUpload in documentUploads)
+            {
+                var (documentFileName, documentFilePath) = await SaveDocumentLocally(documentUpload);
+
+                if (documentFileName != null)  // Ensure documentFileName is not null
+                {
+                    // Create DocumentFileNames entity
+                    var documentEntity = new DocumentFileNames
+                    {
+                        FileName = documentFileName,
+                        FilePath = documentFilePath,
+                        BlogPostId = existingBlog.Id,
+                        Id = Guid.NewGuid(),
+                    };
+
+                    await documentFileNamesRepository.AddAsync(documentEntity);
+                }
+            }
+
+
+            // Save changes to the blog post
+            await blogPostRepository.UpdateAsync(existingBlog);
+
+            // Show success notification
             return RedirectToAction("Edit", new { id = editBlogPostRequest.Id });
         }
 
@@ -324,20 +378,40 @@ namespace Bloggie.Web.Controllers
         }
 
 
-        [HttpPost]
-        public async Task<IActionResult> Delete(EditBlogPostRequest editBlogPostRequest)
-        {
-            // Talk to repository to delete this blog post and tags
-            var deletedBlogPost = await blogPostRepository.DeleteAsync(editBlogPostRequest.Id);
 
+        [HttpPost]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            // Get associated documents
+            var associatedDocuments = await documentFileNamesRepository.GetDocumentsByBlogPostIdAsync(id);
+
+            // Delete documents from storage
+            foreach (var document in associatedDocuments)
+            {
+                var docFilePath = Path.Combine(_hostingEnvironment.WebRootPath, "documents", document.FileName);
+                if (System.IO.File.Exists(docFilePath))
+                {
+                    System.IO.File.Delete(docFilePath);
+                }
+            }
+
+            // Delete blog post and associated documents from the database
+            var deletedBlogPost = await blogPostRepository.DeleteAsync(id);
+
+            // Show success or error notification based on the result
             if (deletedBlogPost != null)
             {
-                // Show success notification
+                // Delete associated documents from the database
+                foreach (var document in associatedDocuments)
+                {
+                    await documentFileNamesRepository.DeleteAsync(document.Id);
+                }
+
                 return RedirectToAction("List");
             }
 
             // Show error notification
-            return RedirectToAction("Edit", new { id = editBlogPostRequest.Id });
+            return RedirectToAction("List");
         }
 
 

@@ -13,18 +13,21 @@ namespace Bloggie.Web.Controllers
         private readonly SignInManager<IdentityUser> signInManager;
         private readonly UserManager<IdentityUser> userManager;
         private readonly IBlogPostCommentRepository blogPostCommentRepository;
+        private readonly IDocumentFileNamesRepository documentFileNamesRepository;
 
         public BlogsController(IBlogPostRepository blogPostRepository,
             IBlogPostLikeRepository blogPostLikeRepository,
             SignInManager<IdentityUser> signInManager,
             UserManager<IdentityUser> userManager,
-            IBlogPostCommentRepository blogPostCommentRepository)
+            IBlogPostCommentRepository blogPostCommentRepository,
+            IDocumentFileNamesRepository documentFileNamesRepository)
         {
             this.blogPostRepository = blogPostRepository;
             this.blogPostLikeRepository = blogPostLikeRepository;
             this.signInManager = signInManager;
             this.userManager = userManager;
             this.blogPostCommentRepository = blogPostCommentRepository;
+            this.documentFileNamesRepository = documentFileNamesRepository;
         }
 
 
@@ -51,8 +54,6 @@ namespace Bloggie.Web.Controllers
                         var likeFromUser = likesForBlog.FirstOrDefault(x => x.UserId == Guid.Parse(userId));
                         liked = likeFromUser != null;
                     }
-
-
                 }
 
                 // Get comments for blog post
@@ -71,6 +72,9 @@ namespace Bloggie.Web.Controllers
                     });
                 }
 
+                // Retrieve documents for the blog post from the repository
+                var documentFileNames = await documentFileNamesRepository.GetDocumentsByBlogPostIdAsync(blogPost.Id);
+
                 blogDetailsViewModel = new BlogDetailsViewModel
                 {
                     Id = blogPost.Id,
@@ -85,18 +89,17 @@ namespace Bloggie.Web.Controllers
                     Visible = blogPost.Visible,
                     Tags = blogPost.Tags,
                     TotalLikes = totalLikes,
-                    DocumentFileName = blogPost.DocumentFileName,
+
+                    DocumentFileNames = documentFileNames?.ToList(),
+
                     Liked = liked,
                     Comments = blogCommentsForView
-
                 };
-
             }
 
             return View(blogDetailsViewModel);
         }
 
-      
 
         [HttpPost]
         public async Task<IActionResult> Index(BlogDetailsViewModel blogDetailsViewModel)

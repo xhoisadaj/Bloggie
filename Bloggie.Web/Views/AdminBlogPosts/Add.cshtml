@@ -62,14 +62,14 @@
             </div>
 
         </div>
-     <div class="mb-3">
-    <label class="form-label">Document Upload</label>
-    <input type="file" id="documentUpload" name="DocumentUpload" class="form-control" accept=".pdf, .doc, .docx, .xls, .xlsx" />
+        <div class="mb-3">
+            <label class="form-label">Document Upload</label>
+            <input type="file" id="documentUpload" name="documentUploads" class="form-control" accept=".pdf, .doc, .docx, .xls, .xlsx" multiple />
 
-    <div class="invalid-feedback" asp-validation-for="DocumentUpload">
-        @Html.ValidationMessageFor(model => model.DocumentUpload)
-    </div>
-</div>
+            <div class="invalid-feedback" asp-validation-for="DocumentUpload">
+                @Html.ValidationMessageFor(model => model.DocumentUpload)
+            </div>
+        </div>
 
 
 

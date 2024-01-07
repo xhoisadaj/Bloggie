@@ -59,6 +59,9 @@ namespace Bloggie.Web
             services.AddScoped<IBlogPostLikeRepository, BlogPostLikeRepository>();
             services.AddScoped<IBlogPostCommentRepository, BlogPostCommentRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IDocumentFileNamesRepository, DocumentFileNamesRepository>();
+
+
             services.AddScoped<IEmailService, EmailService>();
 
 

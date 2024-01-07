@@ -44,14 +44,31 @@
             </div>
 
             <div class="mb-3">
-                <label asp-for="DocumentUpload"></label>
-                <input type="file" id="documentUpload" name="DocumentUpload" class="form-control" accept=".pdf, .doc, .docx, .xls, .xlsx" />
+                <label asp-for="DocumentUploads"></label>
+                <input type="file" id="documentUploads" name="DocumentUploads" class="form-control" accept=".pdf, .doc, .docx, .xls, .xlsx" multiple />
 
                 <div>
-                    <h4>Attached Document</h4>
-                    <a href="@Url.Content($"~/documents/{Model.DocumentFileName}")" target="_blank">View Attached Document</a>
+                    <h4>Attached Documents</h4>
+                    @for (var i = 0; i < Model.DocumentFileNames.Count(); i++)
+                    {
+                        <input type="hidden" asp-for="@Model.DocumentFileNames.ToList()[i]" />
+                    }
+
+                    @if (Model.DocumentFileNames != null && Model.DocumentFileNames.Any())
+                    {
+                        <ul>
+                            @foreach (var documentFileName in Model.DocumentFileNames)
+                            {
+                                <li>
+                                    <a href="@Url.Content($"~/documents/{documentFileName}")" target="_blank">View Attached Document @documentFileName</a>
+                                </li>
+                            }
+                        </ul>
+                    }
                 </div>
             </div>
+
+
 
             <div class="mb-3">
                 <label class="form-label">Featured Image Upload</label>

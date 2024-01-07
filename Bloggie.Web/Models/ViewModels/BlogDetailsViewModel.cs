@@ -20,8 +20,7 @@ namespace Bloggie.Web.Models.ViewModels
 
         public bool Liked { get; set; }
         public string CommentDescription { get; set; }
-        public string DocumentFileName { get; set; }
-
+        public ICollection<DocumentFileNames> DocumentFileNames { get; set; }
 
         public IEnumerable<BlogComment> Comments { get; set; }
     }
