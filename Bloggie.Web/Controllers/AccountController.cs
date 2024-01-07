@@ -1,4 +1,5 @@
 ﻿
+using Azure.Core;
 using Bloggie.Web.Models.ViewModels;
 using Bloggie.Web.Repositories;
 using Microsoft.AspNetCore.Authorization;
@@ -161,10 +162,13 @@ namespace Bloggie.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateProfile(UpdateProfileViewModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
+            //if (!ModelState.IsValid)
+            //{
+            //    TempData["ErrorMessage"] = "Error updating the profile. Please try again.";
+
+            //    return View(model);
+               
+            //}
 
             var user = await userManager.GetUserAsync(User);
 
@@ -198,6 +202,8 @@ namespace Bloggie.Web.Controllers
             if (result.Succeeded)
             {
                 // Show success notification
+                TempData["SuccessMessage"] = "Profile updated successfully!";
+
                 return RedirectToAction("Index", "Home");
             }
 
@@ -205,7 +211,7 @@ namespace Bloggie.Web.Controllers
             {
                 ModelState.AddModelError(string.Empty, error.Description);
             }
-
+         
             return View(model);
         }
 

@@ -2,6 +2,7 @@
 
 @{
 }
+
 <style>
     .second-toolbar {
         display: none;
@@ -12,6 +13,22 @@
         <h1>Edit BlogPost - Admin Functionality</h1>
     </div>
 </div>
+@if (TempData["SuccessMessage"] != null)
+{
+    <div id="success-toast" class="toast align-items-center" style="margin:auto" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-body">
+            @TempData["SuccessMessage"]
+        </div>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div id="success-toast" class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-body">
+            @TempData["ErrorMessage"]
+        </div>
+    </div>
+}
 
 <div class="container py-5">
     @if (Model != null)
@@ -187,6 +204,24 @@
 
         featuredUploadElement.addEventListener('change', uploadFeaturedImage);
 
+
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var successToast = document.getElementById('success-toast');
+
+            if (successToast) {
+                console.log('Success toast found');
+                var toast = new bootstrap.Toast(successToast);
+                toast.show();
+
+                setTimeout(function () {
+                    toast.hide();
+                }, 2000); // Set the time in milliseconds (2 seconds in this example)
+            } else {
+                console.log('Success toast not found');
+            }
+        });
 
     </script>
 }

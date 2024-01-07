@@ -1,7 +1,7 @@
 ﻿@model List<Bloggie.Web.Models.Domain.BlogPost>
 @if (TempData["SuccessMessage"] != null)
 {
-    <div id="success-toast" class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+    <div id="success-toast" class="toast align-items-center" style="margin:auto" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-body">
             @TempData["SuccessMessage"]
         </div>

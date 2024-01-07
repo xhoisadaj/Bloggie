@@ -7,7 +7,22 @@
             <h1 class="mt-3 mb-3 h3">
                 Profile
             </h1>
-
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div id="success-toast" class="toast align-items-center" style="margin:auto" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-body">
+                        @TempData["SuccessMessage"]
+                    </div>
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div id="success-toast" class="toast align-items-center" style="margin:auto" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-body">
+                        @TempData["ErrorMessage"]
+                    </div>
+                </div>
+            }
             <form asp-controller="Account" asp-action="UpdateProfile" method="post" class="container needs-validation" novalidate onsubmit="return validateForm()">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
@@ -89,4 +104,38 @@
 
         return isValid;
     }
+
+
+    // Helper function to add/remove is-invalid and is-valid classes based on field value
+    function validateField(field) {
+        if (!field.value.trim()) {
+            // Add the is-invalid class to show the validation error message
+            field.classList.add('is-invalid');
+            // Remove the is-valid class to hide the valid checker
+            field.classList.remove('is-valid');
+        } else {
+            // Add the is-valid class to show the valid checker
+            field.classList.add('is-valid');
+            // Remove the is-invalid class to hide the validation error message
+            field.classList.remove('is-invalid');
+        }
+    }
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var successToast = document.getElementById('success-toast');
+
+        if (successToast) {
+            console.log('Success toast found');
+            var toast = new bootstrap.Toast(successToast);
+            toast.show();
+
+            setTimeout(function () {
+                toast.hide();
+            }, 2000); // Set the time in milliseconds (2 seconds in this example)
+        } else {
+            console.log('Success toast not found');
+        }
+    });
+
 </script>

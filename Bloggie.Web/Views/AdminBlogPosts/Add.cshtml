@@ -5,6 +5,8 @@
     .second-toolbar{
         display:none;
     }
+
+  
 </style>
 <div class="bg-secondary bg-opacity-10 py-2">
     <div class="container">
@@ -13,7 +15,7 @@
 </div>
 @if (TempData["SuccessMessage"] != null)
 {
-    <div id="success-toast" class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+    <div id="success-toast" class="toast align-items-center" style="margin:auto" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-body">
             @TempData["SuccessMessage"]
         </div>
@@ -104,7 +106,7 @@
             </div>
         </div>
 
-        <div class="mb-3">
+         <div class="mb-3">
             <label class="form-label">Published Date</label>
             <!-- Set the value to the current day using Razor syntax -->
             <input type="date" class="form-control" id="publishedDate" asp-for="PublishedDate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
@@ -112,8 +114,8 @@
             <div class="invalid-feedback" asp-validation-for="PublishedDate">
                 Published Date is required.
             </div>
-        </div>
-
+        </div> 
+      
         <div class="mb-3">
             <label class="form-label">Author</label>
             <input type="text" class="form-control" id="author" asp-for="Author" />
@@ -163,6 +165,9 @@
 
 
 @section Scripts {
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
     <script>
         var editor = new FroalaEditor('#content', {
@@ -295,6 +300,8 @@
             });
         });
 
+     
+
 
         // Helper function to check if a field is valid
         function isValidField(field) {
@@ -372,6 +379,20 @@
             });
     
         // Example starter JavaScript for disabling form submissions if there are invalid fields
-        
+        $("input[type=date]").datepicker({
+            dateFormat: 'yy-mm-dd',
+            onSelect: function (dateText, inst) {
+                $(inst).val(dateText); // Write the value in the input
+            }
+        });
+
+        // Code below to avoid the classic date-picker
+        $("input[type=date]").on('click', function () {
+            return false;
+        });
     </script>
+   
+
+
+
 }

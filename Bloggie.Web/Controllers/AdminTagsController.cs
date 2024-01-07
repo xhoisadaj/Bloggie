@@ -43,6 +43,7 @@ namespace Bloggie.Web.Controllers
             };
 
             await tagRepository.AddAsync(tag);
+            TempData["SuccessMessage"] = "Tag is added successfully!";
 
             return RedirectToAction("List");
 
@@ -85,8 +86,8 @@ namespace Bloggie.Web.Controllers
                     Name = tag.Name,
                     DisplayName = tag.DisplayName
                 };
-
                 return View(editTagRequest);
+
             }
 
             return View(null);
@@ -107,10 +108,14 @@ namespace Bloggie.Web.Controllers
             if (updatedTag != null)
             {
                 // Show success notification
+                TempData["SuccessMessage"] = "Tag is edited successfully!";
+
             }
             else
             {
                 // Show error notification
+                TempData["ErrorMessage"] = "Error editing the tag. Please try again.";
+
             }
 
             return RedirectToAction("Edit", new { id = editTagRequest.Id });
@@ -124,10 +129,14 @@ namespace Bloggie.Web.Controllers
             if (deletedTag != null)
             {
                 // Show success notification
+                TempData["SuccessMessage"] = "Tag is deleted successfully!";
+
                 return RedirectToAction("List");
             }
 
             // Show an error notification
+            TempData["ErrorMessage"] = "Error deleting the tag. Please try again.";
+
             return RedirectToAction("Edit", new { id = editTagRequest.Id });
         }
 

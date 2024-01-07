@@ -90,7 +90,7 @@ namespace Bloggie.Web.Controllers
                 {
                     var documentFileNames = new List<DocumentFileNames>();
 
-                    // Check if documents were uploaded
+                    // Check if documents were uploaded9
                     // Save each document locally and create DocumentFileNames entities
                     foreach (var documentUpload in documentUploads)
                     {
@@ -141,7 +141,13 @@ namespace Bloggie.Web.Controllers
                 return (null, null);
             }
 
-            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(documentUpload.FileName);
+            // Get the original filename
+            var originalFileName = Path.GetFileName(documentUpload.FileName);
+
+            // Combine the original filename with a unique identifier (if needed)
+           
+            var fileName = $"{originalFileName}_{DateTime.Now.Ticks}";
+
             var filePath = Path.Combine(_hostingEnvironment.WebRootPath, "documents", fileName);
 
             // Log the file path
@@ -332,7 +338,22 @@ namespace Bloggie.Web.Controllers
 
 
             // Save changes to the blog post
-            await blogPostRepository.UpdateAsync(existingBlog);
+            var editingblogpost = await blogPostRepository.UpdateAsync(existingBlog);
+
+
+            if (editingblogpost != null)
+            {
+                // Show success notification
+            TempData["SuccessMessage"] = "Blog post edited successfully!";
+
+
+            }
+            else
+            {
+                // Show error notification
+                TempData["ErrorMessage"] = "Error editing the blog post. Please try again.";
+
+            }
 
             // Show success notification
             return RedirectToAction("Edit", new { id = editBlogPostRequest.Id });
@@ -354,10 +375,26 @@ namespace Bloggie.Web.Controllers
             existingBlog.Visible = isVisible;
 
             // Save changes
-            await blogPostRepository.UpdateAsync(existingBlog);
+            var updatedblogpost = await blogPostRepository.UpdateAsync(existingBlog);
 
-            // Redirect back to the list or wherever appropriate
+            if (updatedblogpost != null)
+            {
+                // Show success notification
+                TempData["SuccessMessage"] = "Blog post visibility updated successfully!";
+
+
+            }
+            else
+            {
+                // Show error notification
+                TempData["ErrorMessage"] = "Error updating the visibility of the blog post. Please try again.";
+
+            }
+            TempData["SuccessMessage"] = "Blog post visibility updated successfully!";
+
+
             return RedirectToAction("List");
+
         }
 
         [HttpGet]
@@ -406,10 +443,11 @@ namespace Bloggie.Web.Controllers
                 {
                     await documentFileNamesRepository.DeleteAsync(document.Id);
                 }
-
+                TempData["SuccessMessage"] = "Blog post deleted successfully!";
                 return RedirectToAction("List");
             }
-
+       
+            TempData["ErrorMessage"] = "Error deleting the blog post. Please try again.";
             // Show error notification
             return RedirectToAction("List");
         }
