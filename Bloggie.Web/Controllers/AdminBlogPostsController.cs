@@ -146,7 +146,8 @@ namespace Bloggie.Web.Controllers
 
             // Combine the original filename with a unique identifier (if needed)
            
-            var fileName = $"{originalFileName}_{DateTime.Now.Ticks}";
+            
+            var fileName = $"{originalFileName}";
 
             var filePath = Path.Combine(_hostingEnvironment.WebRootPath, "documents", fileName);
 
