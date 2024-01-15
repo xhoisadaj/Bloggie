@@ -6,6 +6,8 @@
         public string FileName { get; set; }
         public string FilePath { get; set; }
 
+        public string Base64Content { get; set; }
+
         // Additional properties related to documents, if needed
 
         // Foreign key to associate the document with a blog post

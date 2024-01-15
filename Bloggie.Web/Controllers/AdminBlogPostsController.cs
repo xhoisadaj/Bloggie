@@ -90,17 +90,18 @@ namespace Bloggie.Web.Controllers
                 {
                     var documentFileNames = new List<DocumentFileNames>();
 
-                    // Check if documents were uploaded9
+                    // Check if documents were uploaded
                     // Save each document locally and create DocumentFileNames entities
                     foreach (var documentUpload in documentUploads)
                     {
-                        var (documentFileName, documentFilePath) = await SaveDocumentLocally(documentUpload);
+                        var (documentFileName, documentFilePath, documentBase64) = await SaveDocumentLocally(documentUpload);
 
                         // Create DocumentFileNames entity
                         var documentEntity = new DocumentFileNames
                         {
                             FileName = documentFileName,
                             FilePath = documentFilePath,
+                            Base64Content = documentBase64, // Save Base64 content in the entity
                             BlogPostId = blogPost.Id,
                             Id = Guid.NewGuid(),
                         };
@@ -133,20 +134,18 @@ namespace Bloggie.Web.Controllers
             return View(addBlogPostRequest);
         }
 
-        private async Task<(string FileName, string FilePath)> SaveDocumentLocally(IFormFile documentUpload)
+        private async Task<(string FileName, string FilePath, string Base64Content)> SaveDocumentLocally(IFormFile documentUpload)
         {
             if (documentUpload == null || documentUpload.Length == 0)
             {
                 // No file uploaded
-                return (null, null);
+                return (null, null, null);
             }
 
             // Get the original filename
             var originalFileName = Path.GetFileName(documentUpload.FileName);
 
             // Combine the original filename with a unique identifier (if needed)
-           
-            
             var fileName = $"{originalFileName}";
 
             var filePath = Path.Combine(_hostingEnvironment.WebRootPath, "documents", fileName);
@@ -159,7 +158,10 @@ namespace Bloggie.Web.Controllers
                 await documentUpload.CopyToAsync(fileStream);
             }
 
-            return (fileName, filePath);
+            // Convert document content to Base64
+            var base64Content = Convert.ToBase64String(await System.IO.File.ReadAllBytesAsync(filePath));
+
+            return (fileName, filePath, base64Content);
         }
 
 
@@ -199,7 +201,6 @@ namespace Bloggie.Web.Controllers
         }
 
         [HttpGet]
-        
         public async Task<IActionResult> Edit(Guid id)
         {
             var blogPost = await blogPostRepository.GetAsync(id);
@@ -320,7 +321,7 @@ namespace Bloggie.Web.Controllers
             // Save newly uploaded documents
             foreach (var documentUpload in documentUploads)
             {
-                var (documentFileName, documentFilePath) = await SaveDocumentLocally(documentUpload);
+                var (documentFileName, documentFilePath, documentBase64) = await SaveDocumentLocally(documentUpload);
 
                 if (documentFileName != null)  // Ensure documentFileName is not null
                 {
@@ -329,6 +330,7 @@ namespace Bloggie.Web.Controllers
                     {
                         FileName = documentFileName,
                         FilePath = documentFilePath,
+                        Base64Content = documentBase64, // Save Base64 content in the entity
                         BlogPostId = existingBlog.Id,
                         Id = Guid.NewGuid(),
                     };
@@ -337,23 +339,18 @@ namespace Bloggie.Web.Controllers
                 }
             }
 
-
             // Save changes to the blog post
             var editingblogpost = await blogPostRepository.UpdateAsync(existingBlog);
-
 
             if (editingblogpost != null)
             {
                 // Show success notification
-            TempData["SuccessMessage"] = "Blog post edited successfully!";
-
-
+                TempData["SuccessMessage"] = "Blog post edited successfully!";
             }
             else
             {
                 // Show error notification
                 TempData["ErrorMessage"] = "Error editing the blog post. Please try again.";
-
             }
 
             // Show success notification
